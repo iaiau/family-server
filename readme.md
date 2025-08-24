@@ -15,7 +15,7 @@
 # 三、添加管理员用户
   > sqlite3 app.db
   sqlite> insert into users('username','name','deleted','password') values('admin','admin',0,'21232f297a57a5a743894a0e4a801fc3');
-  21232f297a57a5a743894a0e4a801fc3 为 admin 的md5值
+  > 21232f297a57a5a743894a0e4a801fc3 为 admin 的md5值
   
 
 
