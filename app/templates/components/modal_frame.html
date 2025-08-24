@@ -1,0 +1,185 @@
+{%if userModal %}
+<!-- 用户模态框 -->
+<div class="modal fade" id="userModal" z-index="99999">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">添加用户</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="userForm">
+                <div class="modal-body">
+                    <input type="hidden" class="form-control" name="user_id">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">姓名</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">角色</label>
+                        <select class="form-select" name="role">
+                            <option value="普通用户">普通用户</option>
+                            <option value="管理员">管理员</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{%endif%}
+
+{% if  memoModal %}
+<!-- 新增/编辑备忘录模态框 -->
+<div class="modal fade" id="memoModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">新增备忘录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="memoForm">
+                    <input type="hidden" id="memoId">
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label">标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" required placeholder="请输入备忘录标题">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="content" class="form-label">内容</label>
+                        <textarea class="form-control" id="content" rows="4" placeholder="请输入备忘录内容"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label">优先级 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="priority" required>
+                                <option value="high">高 - 紧急重要</option>
+                                <option value="medium" selected>中 - 重要不紧急</option>
+                                <option value="low">低 - 不紧急不重要</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">分类 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" required>
+                                <option value="work">工作</option>
+                                <option value="life">生活</option>
+                                <option value="study">学习</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">标签</label>
+                        <input type="text" class="form-control" id="tags" placeholder="请输入标签，用逗号分隔">
+                        <small class="form-text text-muted">例如: 会议,项目A,待办</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reminder" class="form-label">提醒时间</label>
+                        <input type="datetime-local" class="form-control" id="reminder">
+                        <small class="form-text text-muted">设置提醒时间，到期将收到通知</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveMemoBtn">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认删除模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除这条备忘录吗？此操作不可撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/local/memoframe.js') }}"></script>
+{% endif %}
+
+{% if expModal %}
+<!-- 编辑模态框 -->
+<div class="modal fade" id="editModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">经验记录</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="experienceForm">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="expTitle"
+                               placeholder="请输入经验主题（示例：高并发系统限流方案设计）" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">核心方法论</label>
+                        <textarea class="form-control" id="methodology" rows="3"
+                                  placeholder="结构化描述解决方案"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">实践验证</label>
+                        <div id="validationEditor" class="form-control"
+                             contenteditable="true" style="min-height: 150px"></div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">技术领域</label>
+                            <select class="form-select" id="category">
+                                <option value="架构">架构设计</option>
+                                <option value="运维">DevOps</option>
+                                <option value="前端">Web开发</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">难度等级</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="difficulty" id="easy">
+                                    <label class="form-check-label" for="easy">初级</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="difficulty" id="medium" checked>
+                                    <label class="form-check-label" for="medium">中级</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveExperience">保存知识</button>
+            </div>
+        </div>
+    </div>
+</div>
+{%endif%}

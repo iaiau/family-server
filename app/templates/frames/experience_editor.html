@@ -1,0 +1,200 @@
+<link href="{{ url_for('static', filename='css/quill.snow.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/libs/quill.js') }}"></script>
+<style>
+    #editor-container {
+        height: 1122px;
+        margin-bottom: 20px;
+    }
+    .toolbar-extra {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    .input-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+        width: 100%;
+    }
+    .input-label {
+        font-size: 16px;
+        margin-right: 12px;
+        min-width: 60px;
+    }
+    .input-field {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #acc7ef;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .input-field:focus {
+      outline: none;
+    }
+</style>
+<div class="container mt-1">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="toolbar-extra">
+                <button id="save-btn" class="btn btn-primary me-2">
+                    <i class="bi bi-save"></i> 保存
+                </button>
+                <button id="share-btn" class="btn btn-info me-2">
+                    <i class="bi bi-share"></i> 分享
+                </button>
+                <button id="clear-btn" class="btn btn-danger me-2">
+                    <i class="bi bi-trash"></i> 清空
+                </button>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="auto-save">
+                    <label class="form-check-label" for="auto-save">自动保存</label>
+                </div>
+            </div>
+
+            <!-- 组件2：增强版 -->
+            <div class="input-group">
+                <span class="input-label">标题</span>
+                <input type="text" class="input-field" placeholder="请输入标题">
+            </div>
+            <input type="hidden" class="exp-id"> </input>
+            <div id="editor-container">
+                <!-- Quill编辑器将在这里渲染 -->
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">字数: <span id="word-count">0</span></small>
+                <small class="text-muted">最后保存: <span id="last-saved">从未</span></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 初始化Quill编辑器
+    const quill = new Quill('#editor-container', {
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] },{ 'list': 'ordered'},
+                { 'list': 'bullet' },{'align': []},{'direction': 'rtl'},
+                {'size': ['small', 'large', 'huge']},{'background': []}],
+                ['code-block'],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        },
+        placeholder: '开始写作...',
+        theme: 'snow'
+    });
+
+    // 从本地存储加载内容
+    const savedContent = localStorage.getItem('quill-content');
+    if (savedContent) {
+        quill.setContents(JSON.parse(savedContent));
+        document.getElementById('last-saved').textContent = new Date().toLocaleString();
+    }
+
+    // 字数统计
+    quill.on('text-change', function() {
+        const text = quill.getText().trim();
+        document.getElementById('word-count').textContent = text.length > 0 ? text.split(/\s+/).length : 0;
+
+        if (document.getElementById('auto-save').checked) {
+            saveContent();
+        }
+    });
+
+    // 保存功能
+    document.getElementById('save-btn').addEventListener('click', saveContent);
+
+    function saveContent() {
+        const content = quill.getContents();
+        localStorage.setItem('quill-content', JSON.stringify(content));
+        document.getElementById('last-saved').textContent = new Date().toLocaleString();
+
+        // 显示保存成功的提示
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.innerHTML = `
+            <div class="toast show" role="alert">
+                <div class="toast-header">
+                    <strong class="me-auto">系统提示</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    内容已保存！
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    $("#share-btn").click(function(){
+        $.ajax({
+            url:"/experiences/save",
+            type:"POST",
+            data:{
+                id:$(".exp-id").val(),
+                content:quill.root.innerHTML,
+                title:$(".input-field").val()
+            },
+            success:function(res){
+                if(res.status == "success"){
+                    window.location.href = "/experiences/exp_content/" + res._id;
+                }else{
+
+                }
+            }
+        });
+    });
+
+
+    async function uploadToServer(file) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('files[]', file);
+        $.ajax({
+           url: '/experiences/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+          success: resolve,
+          error: reject
+        });
+      });
+    }
+
+    quill.getModule('toolbar').addHandler('image', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = () => {
+        const file = input.files[0];
+        uploadToServer(file).then(res => {
+            console.log(res);
+          const range = quill.getSelection();
+          quill.insertEmbed(range.index, 'image', res.path);
+        });
+      };
+      input.click();
+    });
+
+
+    // 清空功能
+    document.getElementById('clear-btn').addEventListener('click', function() {
+        if (confirm('确定要清空所有内容吗？')) {
+            quill.setContents([]);
+            localStorage.removeItem('quill-content');
+            document.getElementById('word-count').textContent = 0;
+            document.getElementById('last-saved').textContent = '从未';
+        }
+    });
+
+    // 初始化字数统计
+    const initialText = quill.getText().trim();
+    document.getElementById('word-count').textContent = initialText.length > 0 ? initialText.split(/\s+/).length : 0;
+</script>

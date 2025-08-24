@@ -1,0 +1,185 @@
+{% block resource %}
+<style>
+    .module-card {
+        transition: transform 0.2s;
+        min-height: 180px;
+    }
+    .module-card:hover {
+        transform: translateY(-5px);
+    }
+    .external-module {
+        cursor: move;
+        border-left: 3px solid #0d6efd;
+    }
+    .sortable-ghost {
+        opacity: 0.5;
+        background: #f8f9fa;
+    }
+</style>
+{%endblock%}
+<div class="container py-4">
+    <h2 class="mb-4">实用工具</h2>
+
+    <!-- 自研模块 -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <div class="row g-4" id="builtinModules">
+                <!-- 固定模块 -->
+                <div class="col-md-4">
+                    <div class="card module-card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5>闹钟</h5>
+                            <p class="text-muted">在线闹钟</p>
+                            <a href="/tools/alarm_clock" class="btn btn-outline-primary btn-sm">开始使用</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card module-card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5>计算器</h5>
+                            <p class="text-muted">在线计算器</p>
+                            <a href="/tools/calculate" class="btn btn-outline-primary btn-sm">立即使用</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card module-card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5>API调试工具</h5>
+                            <p class="text-muted">支持RESTful接口调试和文档生成</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">立即使用</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card module-card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5>代码质量检测</h5>
+                            <p class="text-muted">自动化代码规范检查工具</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">立即使用</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 外部模块 -->
+    <div class="row g-4">
+        <div class="col-12">
+            <h4 class="text-success mb-3">外部工具</h4>
+
+            <!-- 添加表单 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="externalForm" class="row g-3">
+                        <div class="col-md-5">
+                            <input type="text" class="form-control"
+                                   placeholder="工具名称" id="moduleName" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="url" class="form-control"
+                                   placeholder="工具链接 (http://)" id="moduleUrl" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-success w-100">
+                                添加工具
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 外部模块容器 -->
+            <div class="row g-4" id="externalModules">
+                <!-- 动态添加的内容 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{%block javascript%}
+<script>
+    // 初始化本地存储
+    let externalTools = JSON.parse(localStorage.getItem('externalTools')) || [];
+
+    // 渲染外部工具
+    function renderExternalTools() {
+        $('#externalModules').empty();
+        externalTools.forEach((tool, index) => {
+            const toolHtml = `
+                <div class="col-md-4" data-id="${index}">
+                    <div class="card external-module shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5>${tool.name}</h5>
+                                <button class="btn btn-link text-danger delete-btn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <a href="${tool.url}" target="_blank"
+                               class="btn btn-outline-success btn-sm mt-2">
+                               访问链接
+                            </a>
+                        </div>
+                    </div>
+                </div>`;
+            $('#externalModules').append(toolHtml);
+        });
+
+        // 初始化排序功能
+        $("#externalModules").sortable({
+            items: "> .col-md-4",
+            opacity: 0.7,
+            ghostClass: "sortable-ghost",
+            update: function(event, ui) {
+                saveSortOrder();
+            }
+        });
+    }
+
+    // 保存排序顺序
+    function saveSortOrder() {
+        const newOrder = [];
+        $("#externalModules > .col-md-4").each(function() {
+            const id = $(this).data('id');
+            newOrder.push(externalTools[id]);
+        });
+        externalTools = newOrder;
+        localStorage.setItem('externalTools', JSON.stringify(externalTools));
+        renderExternalTools();
+    }
+
+    // 添加新工具
+    $('#externalForm').submit(function(e) {
+        e.preventDefault();
+        const toolName = $('#moduleName').val();
+        const toolUrl = $('#moduleUrl').val();
+
+        if (!toolName || !toolUrl) {
+            alert('请填写完整信息');
+            return;
+        }
+
+        externalTools.push({
+            name: toolName,
+            url: toolUrl
+        });
+
+        localStorage.setItem('externalTools', JSON.stringify(externalTools));
+        renderExternalTools();
+        this.reset();
+    });
+
+    // 删除工具
+    $(document).on('click', '.delete-btn', function() {
+        const index = $(this).closest('.col-md-4').data('id');
+        externalTools.splice(index, 1);
+        localStorage.setItem('externalTools', JSON.stringify(externalTools));
+        renderExternalTools();
+    });
+
+    // 初始化渲染
+    renderExternalTools();
+{%endblock%}

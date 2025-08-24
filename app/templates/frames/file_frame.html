@@ -1,0 +1,307 @@
+<div class="container-fluid py-4">
+    <!-- 搜索区域 -->
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" placeholder="搜索文件名" id="filename">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="filetype">
+                        <option value="">所有类型</option>
+                        <option value="image">图片</option>
+                        <option value="video">视频</option>
+                        <option value="document">文档</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-primary w-100" id="resetFilter">
+                        <i class="bi bi-arrow-clockwise"></i> 重置
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 上传区域 -->
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <button type="button" class="btn btn-success" id="uploadBtn">
+                    <i class="bi bi-cloud-upload"></i> 上传文件
+                </button>
+                <input type="file" id="fileInput" name="files[]" hidden multiple>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary active view-mode" data-mode="list">
+                    <i class="bi bi-list-task"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary view-mode" data-mode="grid">
+                    <i class="bi bi-grid"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="progress" class="progress mt-3" style="display:none;">
+            <div class="progress-bar" style="width: 0%"></div>
+        </div>
+    </form>
+    <div id="fileList" class="alert alert-info" style=""></div>
+
+    <!-- 预览模态框 -->
+    <div class="modal fade" id="previewModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" id="previewContent">
+                    <!-- 动态加载预览内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // 初始化加载数据
+    $(document).ready(() => loadFiles());
+
+    // 加载文件列表
+    function loadFiles() {
+        $.ajax({
+            url: '/files/list',
+            type: 'POST',
+            data: {
+                filename: $('#filename').val(),
+                filetype: $('#filetype').val(),
+                start_date: $('#startDate').val(),
+                end_date: $('#endDate').val()
+            },
+            success: renderFiles,
+            error: () => window.CustomDialog.alert('数据加载失败', () => {
+                console.log('Alert 数据加载失败');
+            })
+        });
+    }
+
+    // 搜索功能
+    $('#filename').on('input', loadFiles);
+    $('#filetype, #startDate, #endDate').change(loadFiles);
+
+    // 重置筛选
+    $('#resetFilter').click(function() {
+        $('#searchForm')[0].reset();
+        loadFiles();
+    });
+
+    // 上传文件
+    // 文件选择处理
+    $('#uploadBtn').click(() => $('#fileInput').click());
+
+    $('#fileInput').change(function() {
+        const files = this.files;
+        const fileNames = Array.from(files).map(f => f.name);
+        $('#fileList').html(`已选择文件：${fileNames.join(', ')}`).show();
+        uploadFiles(files);
+    });
+
+    // AJAX上传
+    function uploadFiles(files) {
+        const formData = new FormData();
+        Array.from(files).forEach(file => {
+            formData.append('files[]', file);
+        });
+
+        $('#progress').show();
+
+        $.ajax({
+            url: '/files/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: () => {
+                const xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        $('.progress-bar').css('width', percent + '%');
+                    }
+                });
+                return xhr;
+            },
+            success: (res) => {
+                if(res.status === 'success') {
+                    window.CustomDialog.alert(`成功上传 ${res.files.length} 个文件`, () => {
+                        console.log('Alert 确认回调');
+                    });
+                    location.reload();
+                }
+            },
+            error: (xhr) => {
+                window.CustomDialog.alert('上传失败: ' + xhr.responseJSON?.message,() => {
+                    console.log('Alert 确认回调');
+                })
+            },
+            complete: () => {
+                $('#progress').hide();
+                $('.progress-bar').css('width', '0%');
+            }
+        });
+    }
+
+    // 视图切换
+    $('.view-mode').click(function() {
+        $('.view-mode').removeClass('active');
+        $(this).addClass('active');
+        $('#fileList').toggleClass('list-mode grid-mode');
+    });
+
+    // 渲染文件列表
+    function renderFiles(res) {
+        $('#fileList').empty();
+
+        console.log(res);
+
+        if(!res.data || res.data.length == 0){
+            $('#fileList').append(`<div>未查询到文件</div>`);
+            return;
+        }
+
+        res.data.forEach(file => {
+            const fileItem = `
+                <div class="col-md-12 list-item">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi ${getFileIcon(file.filetype)} fs-3 me-3"></i>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${file.filename}</h6>
+                                <small class="text-muted">${file.size} · ${file.create_time}</small>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary preview-btn"
+                                        data-id="${file.id}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success download-btn"
+                                    data-id="${file.id}">
+                                    <i class="bi bi-download"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger delete-btn"
+                                    data-id="${file.id}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $('#fileList').append(fileItem);
+        });
+
+        // 绑定操作事件
+        $('.preview-btn').click(showPreview);
+        $('.download-btn').click(downloadFile);
+        $('.delete-btn').click(deleteFile);
+    }
+
+    // 文件预览
+    function showPreview() {
+        const fileId = $(this).data('id');
+        const file = files.find(f => f.id === fileId);
+
+        $('#previewTitle').text(file.name);
+        let content = '';
+
+        switch(file.type) {
+            case 'image':
+                content = `<img src="files/${file.name}" class="img-fluid" alt="预览">`;
+                break;
+            case 'document':
+                content = `<embed src="files/${file.name}" class="w-100" style="height:70vh">`;
+                break;
+            case 'video':
+                content = `<video controls class="w-100">
+                            <source src="files/${file.name}" type="video/mp4">
+                          </video>`;
+                break;
+        }
+
+        $('#previewContent').html(content);
+        new bootstrap.Modal('#previewModal').show();
+    }
+
+    // 文件下载
+    function downloadFile() {
+        const id = $(this).data('id');
+        window.location.href ="/files/download/" + id;
+    }
+
+    // 文件删除
+    function deleteFile() {
+        window.CustomDialog.confirm(
+            '确认删除该文件？',
+            () => {
+                const fileId = $(this).closest('.card').find('.preview-btn').data('id');
+                $.ajax({
+                    url:"/move_to_trash/files/" + fileId,
+                    type:"POST",
+                    success:function(res){
+                        loadFiles();
+                    }
+                });
+            },
+            () => { /* 取消操作 */ }
+        );
+
+
+    }
+
+    // 工具函数
+    function getFileIcon(type) {
+        const icons = {
+            image: 'bi-file-image',
+            video: 'bi-file-play',
+            document: 'bi-file-pdf'
+        };
+        return icons[type] || 'bi-file-earmark';
+    }
+
+    function getFileType(mimeType) {
+        return mimeType.split('/') === 'image' ? 'image' :
+               mimeType.includes('pdf') ? 'document' :
+               mimeType.includes('video') ? 'video' : 'other';
+    }
+</script>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+    }
+    .list-mode .list-item {
+        display: block;
+        width: 100%;
+    }
+    .grid-mode .list-item {
+        width: 33.33%;
+        padding: 10px;
+    }
+    .preview-btn { min-width: 40px; }
+    .modal-body embed { min-height: 70vh; }
+</style>

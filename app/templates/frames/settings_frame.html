@@ -1,0 +1,819 @@
+<style>
+    :root {
+        --primary-color: #165DFF;
+        --secondary-color: #36CFC9;
+        --dark-bg: #1D2129;
+        --card-bg: #282C34;
+        --text-primary: #F2F3F5;
+        --text-secondary: #86909C;
+        --border-color: #383E47;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-x: hidden;
+    }
+
+    .page-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .form-label {
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-control, .form-select {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.25);
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background-color: #0E4CD1;
+        border-color: #0E4CD1;
+    }
+
+    .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+    }
+
+    .status-online {
+        background-color: rgba(54, 207, 201, 0.2);
+        color: var(--secondary-color);
+    }
+
+    .status-offline {
+        background-color: rgba(245, 108, 108, 0.2);
+        color: #F56C6C;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    input:checked + .slider {
+        background-color: var(--primary-color);
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .storage-bar {
+        height: 8px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .storage-progress {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    .storage-progress.warning {
+        background-color: #FAAD14;
+    }
+
+    .storage-progress.danger {
+        background-color: #F56C6C;
+    }
+
+    .storage-progress.success {
+        background-color: var(--secondary-color);
+    }
+
+    .setting-section {
+        margin-bottom: 2rem;
+    }
+
+    .setting-section-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .avatar-upload {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1rem;
+    }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .avatar-upload:hover .avatar-overlay {
+        opacity: 1;
+    }
+
+    .badge-pill {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+    }
+
+    .server-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .server-info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--text-secondary);
+    }
+
+    .info-value {
+        font-weight: 500;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1055;
+    }
+
+    .toast {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        max-width: 350px;
+    }
+
+    .toast-header {
+        border-bottom: 1px solid var(--border-color);
+        background-color: rgba(0, 0, 0, 0.1);
+        color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+
+        .main-content {
+            padding: 1rem;
+        }
+
+        .row {
+            flex-direction: column;
+        }
+    }
+</style>
+<div class="container-fluid p-0">
+    <div class="row m-0">
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="h2">系统设置</h1>
+                <p class="text-secondary">配置您的家庭服务器个人偏好和系统设置</p>
+            </div>
+
+            <!-- 服务器状态卡片 -->
+            <div class="row mb-4">
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-secondary mb-1">服务器状态</p>
+                                    <h5 class="mb-0">
+                                            <span class="status-badge status-online">
+                                                <i class="fas fa-circle fa-xs"></i>在线
+                                            </span>
+                                    </h5>
+                                </div>
+                                <i class="fas fa-server fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-secondary mb-1">CPU 使用率</p>
+                                    <h5 class="mb-0">28%</h5>
+                                </div>
+                                <i class="fas fa-microchip fa-2x text-primary"></i>
+                            </div>
+                            <div class="storage-bar mt-2">
+                                <div class="storage-progress success" style="width: 28%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-secondary mb-1">内存使用</p>
+                                    <h5 class="mb-0">64%</h5>
+                                </div>
+                                <i class="fas fa-memory fa-2x text-primary"></i>
+                            </div>
+                            <div class="storage-bar mt-2">
+                                <div class="storage-progress warning" style="width: 64%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="text-secondary mb-1">存储使用</p>
+                                    <h5 class="mb-0">78%</h5>
+                                </div>
+                                <i class="fas fa-hdd fa-2x text-primary"></i>
+                            </div>
+                            <div class="storage-bar mt-2">
+                                <div class="storage-progress danger" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个人资料设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-user me-2"></i>个人资料</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="avatar-upload">
+                                <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="avatar-img">
+                                <div class="avatar-overlay">
+                                    <i class="fas fa-camera text-white"></i>
+                                </div>
+                                <input type="file" id="avatarInput" class="d-none">
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm"
+                                    onclick="document.getElementById('avatarInput').click()">
+                                <i class="fas fa-upload me-1"></i>更换头像
+                            </button>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="username" class="form-label">用户名</label>
+                                    <input type="text" class="form-control" id="username" value="admin">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="displayName" class="form-label">显示名称</label>
+                                    <input type="text" class="form-control" id="displayName" value="家庭管理员">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">电子邮件</label>
+                                <input type="email" class="form-control" id="email" value="admin@homelab.local">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="currentPassword" class="form-label">当前密码</label>
+                                    <input type="password" class="form-control" id="currentPassword">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="newPassword" class="form-label">新密码</label>
+                                    <input type="password" class="form-control" id="newPassword">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">个人简介</label>
+                                <textarea class="form-control" id="bio"
+                                          rows="3">家庭服务器管理员，负责维护和管理家庭网络与存储系统。</textarea>
+                            </div>
+                            <button class="btn btn-primary" id="saveProfileBtn">
+                                <i class="fas fa-save me-1"></i>保存个人资料
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 服务器设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-server me-2"></i>服务器设置</span>
+                </div>
+                <div class="card-body">
+                    <div class="setting-section">
+                        <h5 class="setting-section-title">基本信息</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="serverName" class="form-label">服务器名称</label>
+                                <input type="text" class="form-control" id="serverName" value="HomeServer-01">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="serverDescription" class="form-label">服务器描述</label>
+                                <input type="text" class="form-control" id="serverDescription"
+                                       value="家庭媒体与文件服务器">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="timezone" class="form-label">时区</label>
+                                <select class="form-select" id="timezone">
+                                    <option value="Asia/Shanghai" selected>Asia/Shanghai (UTC+8)</option>
+                                    <option value="UTC">UTC</option>
+                                    <option value="Europe/London">Europe/London</option>
+                                    <option value="America/New_York">America/New_York</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="language" class="form-label">语言</label>
+                                <select class="form-select" id="language">
+                                    <option value="zh-CN" selected>简体中文</option>
+                                    <option value="en-US">English (US)</option>
+                                    <option value="ja-JP">日本語</option>
+                                    <option value="ko-KR">한국어</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <h5 class="setting-section-title">服务设置</h5>
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-md-8">
+                                <label class="form-label mb-0">文件共享服务 (Samba)</label>
+                                <small class="text-secondary d-block">启用后可在局域网内共享文件</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <label class="switch">
+                                    <input type="checkbox" checked id="sambaService">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-md-8">
+                                <label class="form-label mb-0">媒体服务器 (Plex)</label>
+                                <small class="text-secondary d-block">启用后可流式传输视频和音乐</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <label class="switch">
+                                    <input type="checkbox" checked id="plexService">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-md-8">
+                                <label class="form-label mb-0">远程访问</label>
+                                <small class="text-secondary d-block">允许从互联网访问服务器</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <label class="switch">
+                                    <input type="checkbox" id="remoteAccess">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row mb-3 align-items-center">
+                            <div class="col-md-8">
+                                <label class="form-label mb-0">自动更新</label>
+                                <small class="text-secondary d-block">自动安装系统和软件更新</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <label class="switch">
+                                    <input type="checkbox" checked id="autoUpdate">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <h5 class="setting-section-title">电源管理</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="sleepMode" class="form-label">睡眠模式</label>
+                                <select class="form-select" id="sleepMode">
+                                    <option value="never" selected>从不睡眠</option>
+                                    <option value="15min">15分钟不活动后</option>
+                                    <option value="30min">30分钟不活动后</option>
+                                    <option value="1hour">1小时不活动后</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="wakeOnLan" class="form-label">网络唤醒</label>
+                                <select class="form-select" id="wakeOnLan">
+                                    <option value="enabled" selected>启用</option>
+                                    <option value="disabled">禁用</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="saveServerBtn">
+                        <i class="fas fa-save me-1"></i>保存服务器设置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 通知设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-bell me-2"></i>通知设置</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label mb-0">邮件通知</label>
+                            <small class="text-secondary d-block">通过邮件发送系统通知</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <label class="switch">
+                                <input type="checkbox" checked id="emailNotifications">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="emailNotificationSettings">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="notificationEmail" class="form-label">通知邮箱</label>
+                                <input type="email" class="form-control" id="notificationEmail"
+                                       value="admin@example.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="emailFrequency" class="form-label">通知频率</label>
+                                <select class="form-select" id="emailFrequency">
+                                    <option value="immediate" selected>即时</option>
+                                    <option value="daily">每日汇总</option>
+                                    <option value="weekly">每周汇总</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label mb-0">推送通知</label>
+                            <small class="text-secondary d-block">通过移动应用发送推送通知</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <label class="switch">
+                                <input type="checkbox" id="pushNotifications">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <h5 class="setting-section-title mt-4">通知类型</h5>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label mb-0">系统错误</label>
+                            <small class="text-secondary d-block">当系统发生错误时通知</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <label class="switch">
+                                <input type="checkbox" checked id="errorNotifications">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label mb-0">存储警告</label>
+                            <small class="text-secondary d-block">当存储空间不足时通知</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <label class="switch">
+                                <input type="checkbox" checked id="storageNotifications">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label mb-0">更新提醒</label>
+                            <small class="text-secondary d-block">当有系统更新时通知</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <label class="switch">
+                                <input type="checkbox" checked id="updateNotifications">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-8">
+                            <label class="form-label mb-0">登录提醒</label>
+                            <small class="text-secondary d-block">当有新设备登录时通知</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <label class="switch">
+                                <input type="checkbox" id="loginNotifications">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="saveNotificationsBtn">
+                        <i class="fas fa-save me-1"></i>保存通知设置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 高级设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-cogs me-2"></i>高级设置</span>
+                </div>
+                <div class="card-body">
+                    <div class="setting-section">
+                        <h5 class="setting-section-title">系统操作</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <button class="btn btn-outline-secondary w-100" id="restartBtn">
+                                    <i class="fas fa-sync-alt me-1"></i>重启服务器
+                                </button>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <button class="btn btn-outline-secondary w-100" id="shutdownBtn">
+                                    <i class="fas fa-power-off me-1"></i>关闭服务器
+                                </button>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <button class="btn btn-outline-secondary w-100" id="backupBtn">
+                                    <i class="fas fa-backup me-1"></i>备份配置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-section">
+                        <h5 class="setting-section-title">恢复出厂设置</h5>
+                        <p class="text-secondary mb-3">
+                            此操作将删除所有用户数据和设置，恢复服务器到初始状态。请谨慎操作。</p>
+                        <button class="btn btn-outline-danger" id="resetBtn">
+                            <i class="fas fa-eraser me-1"></i>恢复出厂设置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认对话框 -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border border-secondary">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title" id="confirmModalTitle">确认操作</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmModalBody">
+                您确定要执行此操作吗？
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 容器 -->
+<div class="toast-container"></div>
+
+<script>
+    $(document).ready(function() {
+        // 初始化变量
+        const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        let currentAction = null;
+
+        // 邮件通知开关
+        $('#emailNotifications').change(function() {
+            if ($(this).is(':checked')) {
+                $('#emailNotificationSettings').slideDown();
+            } else {
+                $('#emailNotificationSettings').slideUp();
+            }
+        });
+
+        // 保存按钮事件
+        $('#saveProfileBtn').click(function() {
+            showToast('个人资料已保存', 'success');
+        });
+
+        $('#saveServerBtn').click(function() {
+            showToast('服务器设置已保存', 'success');
+        });
+
+        $('#saveNotificationsBtn').click(function() {
+            showToast('通知设置已保存', 'success');
+        });
+
+        // 高级操作按钮事件
+        $('#restartBtn').click(function() {
+            currentAction = 'restart';
+            $('#confirmModalTitle').text('重启服务器');
+            $('#confirmModalBody').text('服务器将立即重启，所有连接将被中断。您确定要继续吗？');
+            confirmModal.show();
+        });
+
+        $('#shutdownBtn').click(function() {
+            currentAction = 'shutdown';
+            $('#confirmModalTitle').text('关闭服务器');
+            $('#confirmModalBody').text('服务器将立即关闭。您需要物理操作才能重新启动。您确定要继续吗？');
+            confirmModal.show();
+        });
+
+        $('#backupBtn').click(function() {
+            showToast('配置备份已开始', 'info');
+            // 模拟备份延迟
+            setTimeout(function() {
+                showToast('配置备份已完成', 'success');
+            }, 1500);
+        });
+
+        $('#resetBtn').click(function() {
+            currentAction = 'reset';
+            $('#confirmModalTitle').text('恢复出厂设置');
+            $('#confirmModalBody').text('此操作将删除所有数据并恢复出厂设置，且无法撤销。您确定要继续吗？');
+            confirmModal.show();
+        });
+
+        // 确认操作
+        $('#confirmActionBtn').click(function() {
+            confirmModal.hide();
+
+            if (currentAction === 'restart') {
+                showToast('服务器正在重启...', 'info');
+            } else if (currentAction === 'shutdown') {
+                showToast('服务器正在关闭...', 'info');
+            } else if (currentAction === 'reset') {
+                showToast('正在恢复出厂设置...', 'info');
+            }
+
+            currentAction = null;
+        });
+
+        // 头像上传
+        $('.avatar-overlay').click(function() {
+            $('#avatarInput').click();
+        });
+
+        $('#avatarInput').change(function(e) {
+            if (e.target.files && e.target.files[0]) {
+                // 这里只是模拟头像更新
+                showToast('头像上传成功', 'success');
+            }
+        });
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            // 创建toast元素
+            const toastId = 'toast-' + Date.now();
+            let icon = 'info-circle';
+            let bgClass = 'bg-info';
+
+            if (type === 'success') {
+                icon = 'check-circle';
+                bgClass = 'bg-success';
+            } else if (type === 'error') {
+                icon = 'exclamation-circle';
+                bgClass = 'bg-danger';
+            }
+
+            const toast = `
+                <div id="${toastId}" class="toast fade" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header ${bgClass} text-white">
+                        <i class="fas fa-${icon} me-2"></i>
+                        <strong class="me-auto">通知</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+
+            // 添加到页面
+            $('.toast-container').append(toast);
+
+            // 显示toast
+            const bootstrapToast = new bootstrap.Toast(document.getElementById(toastId));
+            bootstrapToast.show();
+
+            // 5秒后自动移除
+            setTimeout(() => {
+                bootstrapToast.hide();
+                setTimeout(() => {
+                    $('#' + toastId).remove();
+                }, 500);
+            }, 5000);
+        }
+    });
+</script>

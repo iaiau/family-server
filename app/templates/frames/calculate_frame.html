@@ -1,0 +1,626 @@
+<style>
+    body {
+        background-color: #f0f2f5;
+        font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+
+    .calculator-container {
+        max-width: 450px;
+        margin: 50px auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 16px;
+        overflow: hidden;
+        background-color: #1c1c1c;
+    }
+
+    .calculator-display {
+        background-color: #1c1c1c;
+        color: white;
+        padding: 25px 20px;
+        text-align: right;
+        position: relative;
+    }
+
+    .calculator-history {
+        color: #9d9d9d;
+        min-height: 24px;
+        font-size: 1.1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .calculator-input {
+        font-size: 2.5rem;
+        font-weight: 300;
+        min-height: 60px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .calculator-input::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .calculator-input::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
+
+    .calculator-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+    }
+
+    .calc-btn {
+        padding: 20px;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: #505050;
+        color: white;
+    }
+
+    .calc-btn:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+
+    .calc-btn:active {
+        transform: scale(0.98);
+    }
+
+    .btn-function {
+        background-color: #ff9500;
+    }
+
+    .btn-secondary {
+        background-color: #d4d4d2;
+        color: #1c1c1c;
+    }
+
+    .btn-wide {
+        grid-column: span 2;
+    }
+
+    /* 科学计算器切换按钮 */
+    .calc-mode-toggle {
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        cursor: pointer;
+        position: absolute;
+        left: 15px;
+        top: 15px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* 科学计算器面板 */
+    .scientific-panel {
+        display: none;
+        grid-template-columns: repeat(5, 1fr);
+        background-color: #2d2d2d;
+        border-top: 1px solid #444;
+    }
+
+    .scientific-panel.active {
+        display: grid;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 576px) {
+        .calculator-container {
+            margin: 20px 10px;
+        }
+
+        .calc-btn {
+            padding: 15px;
+            font-size: 1rem;
+        }
+
+        .calculator-input {
+            font-size: 2rem;
+        }
+    }
+</style>
+<div class="container">
+    <div class="calculator-container">
+        <!-- 显示区域 -->
+        <div class="calculator-display">
+            <button class="calc-mode-toggle" id="modeToggle">
+                <i class="fas fa-calculator"></i> 科学模式
+            </button>
+            <div class="calculator-history" id="historyDisplay"></div>
+            <div class="calculator-input" id="mainDisplay">0</div>
+        </div>
+
+        <!-- 科学计算器面板 -->
+        <div class="calculator-buttons scientific-panel" id="scientificPanel">
+            <button class="calc-btn btn-secondary" data-action="sin">sin</button>
+            <button class="calc-btn btn-secondary" data-action="cos">cos</button>
+            <button class="calc-btn btn-secondary" data-action="tan">tan</button>
+            <button class="calc-btn btn-secondary" data-action="log">log</button>
+            <button class="calc-btn btn-secondary" data-action="ln">ln</button>
+
+            <button class="calc-btn btn-secondary" data-action="x²">x²</button>
+            <button class="calc-btn btn-secondary" data-action="x³">x³</button>
+            <button class="calc-btn btn-secondary" data-action="x^y">x^y</button>
+            <button class="calc-btn btn-secondary" data-action="√">√</button>
+            <button class="calc-btn btn-secondary" data-action="∛">∛</button>
+
+            <button class="calc-btn btn-secondary" data-action="1/x">1/x</button>
+            <button class="calc-btn btn-secondary" data-action="±">±</button>
+            <button class="calc-btn btn-secondary" data-action="π">π</button>
+            <button class="calc-btn btn-secondary" data-action="e">e</button>
+            <button class="calc-btn btn-secondary" data-action="rad">rad</button>
+
+            <button class="calc-btn btn-secondary" data-action="(">(</button>
+            <button class="calc-btn btn-secondary" data-action=")">)</button>
+            <button class="calc-btn btn-secondary" data-action="n!">n!</button>
+            <button class="calc-btn btn-secondary" data-action="EE">EE</button>
+            <button class="calc-btn btn-secondary" data-action="deg">deg</button>
+        </div>
+
+        <!-- 基本计算器按钮 -->
+        <div class="calculator-buttons" id="basicButtons">
+            <button class="calc-btn btn-secondary" data-action="clear">C</button>
+            <button class="calc-btn btn-secondary" data-action="ce">CE</button>
+            <button class="calc-btn btn-secondary" data-action="backspace">⌫</button>
+            <button class="calc-btn btn-function" data-action="divide">÷</button>
+
+            <button class="calc-btn" data-number="7">7</button>
+            <button class="calc-btn" data-number="8">8</button>
+            <button class="calc-btn" data-number="9">9</button>
+            <button class="calc-btn btn-function" data-action="multiply">×</button>
+
+            <button class="calc-btn" data-number="4">4</button>
+            <button class="calc-btn" data-number="5">5</button>
+            <button class="calc-btn" data-number="6">6</button>
+            <button class="calc-btn btn-function" data-action="subtract">−</button>
+
+            <button class="calc-btn" data-number="1">1</button>
+            <button class="calc-btn" data-number="2">2</button>
+            <button class="calc-btn" data-number="3">3</button>
+            <button class="calc-btn btn-function" data-action="add">+</button>
+
+            <button class="calc-btn btn-secondary" data-action="percent">%</button>
+            <button class="calc-btn" data-number="0">0</button>
+            <button class="calc-btn" data-number=".">.</button>
+            <button class="calc-btn btn-function" data-action="equals">=</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // 计算器状态变量
+        let currentInput = '0';
+        let history = '';
+        let lastOperator = null;
+        let resetOnNextInput = false;
+        let angleMode = 'deg'; // 角度模式: deg 或 rad
+
+        // DOM 元素
+        const mainDisplay = $('#mainDisplay');
+        const historyDisplay = $('#historyDisplay');
+        const scientificPanel = $('#scientificPanel');
+        const modeToggle = $('#modeToggle');
+
+        // 更新显示
+        function updateDisplay() {
+            // 格式化大数字为指数形式
+            if (currentInput.length > 12 && !currentInput.includes('e') && !currentInput.includes('.')) {
+                const num = parseFloat(currentInput);
+                currentInput = num.toExponential(6);
+            }
+
+            mainDisplay.text(currentInput);
+            historyDisplay.text(history);
+        }
+
+        // 数字按钮点击
+        $('button[data-number]').click(function() {
+            const number = $(this).data('number');
+
+            if (resetOnNextInput) {
+                currentInput = '0';
+                resetOnNextInput = false;
+            }
+
+            // 处理小数点
+            if (number === '.' && currentInput.includes('.')) {
+                return; // 已包含小数点，不处理
+            }
+
+            // 处理初始0
+            if (currentInput === '0' && number !== '.') {
+                currentInput = number.toString();
+            } else {
+                currentInput += number.toString();
+            }
+
+            updateDisplay();
+        });
+
+        // 操作按钮点击
+        $('button[data-action]').click(function() {
+            const action = $(this).data('action');
+            handleAction(action);
+        });
+
+        // 处理键盘输入
+        $(document).keydown(function(e) {
+            // 数字键
+            if (e.key >= '0' && e.key <= '9') {
+                handleAction('number', e.key);
+                e.preventDefault();
+            }
+            // 小数点
+            else if (e.key === '.') {
+                handleAction('number', '.');
+                e.preventDefault();
+            }
+            // 运算符
+            else if (e.key === '+' || e.key === '-') {
+                handleAction(e.key === '+' ? 'add' : 'subtract');
+                e.preventDefault();
+            }
+            else if (e.key === '*' || e.key === 'x') {
+                handleAction('multiply');
+                e.preventDefault();
+            }
+            else if (e.key === '/' || e.key === '÷') {
+                handleAction('divide');
+                e.preventDefault();
+            }
+            // 等于
+            else if (e.key === '=' || e.key === 'Enter') {
+                handleAction('equals');
+                e.preventDefault();
+            }
+            // 清除
+            else if (e.key === 'Escape') {
+                handleAction('clear');
+                e.preventDefault();
+            }
+            // 删除
+            else if (e.key === 'Backspace') {
+                handleAction('backspace');
+                e.preventDefault();
+            }
+            // 百分号
+            else if (e.key === '%') {
+                handleAction('percent');
+                e.preventDefault();
+            }
+        });
+
+        // 切换科学计算器模式
+        modeToggle.click(function() {
+            scientificPanel.toggleClass('active');
+            const isActive = scientificPanel.hasClass('active');
+            modeToggle.html(isActive ?
+                '<i class="fas fa-calculator"></i> 基本模式' :
+                '<i class="fas fa-calculator"></i> 科学模式');
+        });
+
+        // 处理各种操作
+        function handleAction(action, value = null) {
+            switch(action) {
+                case 'number':
+                    // 处理数字和小数点
+                    if (resetOnNextInput) {
+                        currentInput = '0';
+                        resetOnNextInput = false;
+                    }
+
+                    if (value === '.' && currentInput.includes('.')) {
+                        return;
+                    }
+
+                    if (currentInput === '0' && value !== '.') {
+                        currentInput = value;
+                    } else {
+                        currentInput += value;
+                    }
+                    break;
+
+                case 'clear':
+                    // 清除所有
+                    currentInput = '0';
+                    history = '';
+                    lastOperator = null;
+                    break;
+
+                case 'ce':
+                    // 清除当前输入
+                    currentInput = '0';
+                    break;
+
+                case 'backspace':
+                    // 删除最后一个字符
+                    if (currentInput.length > 1) {
+                        currentInput = currentInput.slice(0, -1);
+                    } else {
+                        currentInput = '0';
+                    }
+                    break;
+
+                case 'add':
+                case 'subtract':
+                case 'multiply':
+                case 'divide':
+                    // 处理运算符
+                    if (lastOperator && !resetOnNextInput) {
+                        // 计算当前表达式
+                        calculateResult();
+                    } else {
+                        // 将当前输入添加到历史记录
+                        history = currentInput;
+                    }
+
+                    lastOperator = action;
+                    history += getOperatorSymbol(action);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'equals':
+                    // 计算结果
+                    calculateResult();
+                    break;
+
+                case 'percent':
+                    // 计算百分比
+                    const num = parseFloat(currentInput) / 100;
+                    currentInput = formatNumber(num);
+                    break;
+
+                case '±':
+                    // 正负号切换
+                    currentInput = currentInput.startsWith('-')
+                        ? currentInput.slice(1)
+                        : '-' + currentInput;
+                    break;
+
+                case 'sin':
+                case 'cos':
+                case 'tan':
+                    // 三角函数
+                    calculateTrigonometric(action);
+                    break;
+
+                case 'log':
+                    // 对数 (以10为底)
+                    const logVal = Math.log10(parseFloat(currentInput));
+                    currentInput = formatNumber(logVal);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'ln':
+                    // 自然对数
+                    const lnVal = Math.log(parseFloat(currentInput));
+                    currentInput = formatNumber(lnVal);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'x²':
+                    // 平方
+                    const square = Math.pow(parseFloat(currentInput), 2);
+                    currentInput = formatNumber(square);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'x³':
+                    // 立方
+                    const cube = Math.pow(parseFloat(currentInput), 3);
+                    currentInput = formatNumber(cube);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'x^y':
+                    // x的y次方
+                    history = currentInput + '^';
+                    lastOperator = 'x^y';
+                    resetOnNextInput = true;
+                    break;
+
+                case '√':
+                    // 平方根
+                    const sqrtVal = Math.sqrt(parseFloat(currentInput));
+                    currentInput = formatNumber(sqrtVal);
+                    resetOnNextInput = true;
+                    break;
+
+                case '∛':
+                    // 立方根
+                    const cbrtVal = Math.cbrt(parseFloat(currentInput));
+                    currentInput = formatNumber(cbrtVal);
+                    resetOnNextInput = true;
+                    break;
+
+                case '1/x':
+                    // 倒数
+                    const reciprocal = 1 / parseFloat(currentInput);
+                    currentInput = formatNumber(reciprocal);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'π':
+                    // 圆周率
+                    currentInput = formatNumber(Math.PI);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'e':
+                    // 自然常数
+                    currentInput = formatNumber(Math.E);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'rad':
+                    // 切换到弧度模式
+                    angleMode = 'rad';
+                    showToast('弧度模式');
+                    break;
+
+                case 'deg':
+                    // 切换到角度模式
+                    angleMode = 'deg';
+                    showToast('角度模式');
+                    break;
+
+                case '(':
+                case ')':
+                    // 括号
+                    if (currentInput === '0' && action === '(') {
+                        currentInput = action;
+                    } else {
+                        currentInput += action;
+                    }
+                    resetOnNextInput = false;
+                    break;
+
+                case 'n!':
+                    // 阶乘
+                    const factorialVal = factorial(parseInt(currentInput));
+                    currentInput = formatNumber(factorialVal);
+                    resetOnNextInput = true;
+                    break;
+
+                case 'EE':
+                    // 科学计数法
+                    if (!currentInput.includes('e')) {
+                        currentInput += 'e';
+                    }
+                    break;
+            }
+
+            updateDisplay();
+        }
+
+        // 计算三角函数
+        function calculateTrigonometric(func) {
+            let value = parseFloat(currentInput);
+
+            // 如果是角度模式，转换为弧度
+            if (angleMode === 'deg') {
+                value = value * Math.PI / 180;
+            }
+
+            let result;
+            switch(func) {
+                case 'sin':
+                    result = Math.sin(value);
+                    break;
+                case 'cos':
+                    result = Math.cos(value);
+                    break;
+                case 'tan':
+                    result = Math.tan(value);
+                    break;
+            }
+
+            currentInput = formatNumber(result);
+            resetOnNextInput = true;
+        }
+
+        // 计算阶乘
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            return n * factorial(n - 1);
+        }
+
+        // 计算结果
+        function calculateResult() {
+            if (!lastOperator || resetOnNextInput) return;
+
+            try {
+                // 构建表达式
+                let expression = history + currentInput;
+
+                // 替换运算符为JavaScript可识别的符号
+                expression = expression
+                    .replace('×', '*')
+                    .replace('÷', '/')
+                    .replace('−', '-')
+                    .replace('^', '**');
+
+                // 计算结果
+                let result = eval(expression); // 注意: 在实际应用中需考虑安全问题
+
+                // 格式化结果
+                currentInput = formatNumber(result);
+
+                // 更新历史记录
+                history += currentInput;
+                lastOperator = null;
+                resetOnNextInput = true;
+            } catch (error) {
+                currentInput = '错误';
+            }
+        }
+
+        // 获取运算符符号
+        function getOperatorSymbol(action) {
+            switch(action) {
+                case 'add': return '+';
+                case 'subtract': return '−';
+                case 'multiply': return '×';
+                case 'divide': return '÷';
+                default: return '';
+            }
+        }
+
+        // 格式化数字
+        function formatNumber(num) {
+            // 处理NaN和Infinity
+            if (isNaN(num) || !isFinite(num)) {
+                return '错误';
+            }
+
+            // 处理整数
+            if (Number.isInteger(num) && num.toString().length <= 12) {
+                return num.toString();
+            }
+
+            // 处理小数，最多显示10位有效数字
+            const precision = 10;
+            return num.toPrecision(precision).replace(/\.?0+$/, '').replace(/\.$/, '');
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            // 移除已有的toast
+            $('.calculator-toast').remove();
+
+            // 创建toast
+            const toast = $(`
+                <div class="calculator-toast position-absolute top-3 left-50 translate-middle-x bg-dark text-white px-3 py-1 rounded text-sm">
+                    ${message}
+                </div>
+            `);
+
+            $('.calculator-container').append(toast);
+
+            // 3秒后隐藏
+            setTimeout(() => {
+                toast.fadeOut(300, () => toast.remove());
+            }, 1500);
+        }
+
+        // 初始化显示
+        updateDisplay();
+    });
+</script>

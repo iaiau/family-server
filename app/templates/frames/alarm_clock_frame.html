@@ -1,0 +1,155 @@
+<style>
+    .time-display {
+        font-size: 3rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    #countdown {
+        color: #dc3545;
+        font-size: 1.5rem;
+    }
+    .alarm-card {
+        max-width: 600px;
+        margin: 2rem auto;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+</style>
+<div class="container">
+    <div class="card alarm-card">
+        <div class="card-body text-center">
+            <h1 class="card-title mb-4">在线闹钟</h1>
+
+            <!-- 当前时间显示 -->
+            <div class="time-display mb-3" id="current-time"></div>
+
+            <!-- 倒计时显示 -->
+            <div id="countdown" class="mb-4"></div>
+
+            <!-- 设置区域 -->
+            <div class="input-group mb-3">
+                <input type="datetime-local" class="form-control" id="alarm-time">
+                <button class="btn btn-primary" id="set-btn">设置闹钟</button>
+            </div>
+
+            <!-- 停止按钮 -->
+            <button class="btn btn-danger d-none" id="stop-btn">停止闹铃</button>
+
+            <!-- 状态提示 -->
+            <div id="status" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        let timer = null;
+        let audioElement = null;
+        let endTimer = null;
+
+        // 更新当前时间
+        function updateTime() {
+            const now = new Date();
+            $('#current-time').text(now.toLocaleTimeString('zh-CN'));
+        }
+
+        // 更新倒计时
+        function updateCountdown(targetTime) {
+            const now = new Date().getTime();
+            const diff = targetTime - now;
+
+            if (diff <= 0) {
+                startAlarm();
+                return;
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            $('#countdown').html(`
+                <span class="badge bg-secondary">剩余时间</span>
+                ${hours.toString().padStart(2, '0')}:
+                ${minutes.toString().padStart(2, '0')}:
+                ${seconds.toString().padStart(2, '0')}
+            `);
+        }
+
+        // 启动闹铃
+        function startAlarm() {
+            clearInterval(timer);
+            $('#stop-btn').removeClass('d-none');
+            $('#set-btn').prop('disabled', true);
+
+            // 创建音频元素
+            audioElement = new Audio('/tools/alarm_sound/ringing');
+            audioElement.loop = true;
+            audioElement.play().catch(error => {
+                $('#status').html(`
+                    <div class="alert alert-warning">
+                        需要点击页面任意位置才能播放声音
+                    </div>
+                `);
+            });
+
+            // 20分钟后自动停止
+            endTimer = setTimeout(() => {
+                stopAlarm();
+            }, 20 * 60 * 1000);
+        }
+
+        // 停止闹铃
+        function stopAlarm() {
+            if (audioElement) {
+                audioElement.pause();
+                audioElement = null;
+            }
+            clearInterval(timer);
+            clearTimeout(endTimer);
+            $('#countdown').empty();
+            $('#stop-btn').addClass('d-none');
+            $('#set-btn').prop('disabled', false);
+            $('#status').empty();
+        }
+
+        // 设置闹钟点击事件
+        $('#set-btn').click(function() {
+            const alarmTime = $('#alarm-time').val();
+            if (!alarmTime) {
+                $('#status').html(`
+                    <div class="alert alert-danger">
+                        请先选择时间！
+                    </div>
+                `);
+                return;
+            }
+
+            const targetTime = new Date(alarmTime).getTime();
+            const now = new Date().getTime();
+
+            if (targetTime <= now) {
+                $('#status').html(`
+                    <div class="alert alert-danger">
+                        请设置未来的时间！
+                    </div>
+                `);
+                return;
+            }
+
+            $('#status').empty();
+            clearInterval(timer);
+
+            timer = setInterval(() => {
+                updateCountdown(targetTime);
+            }, 1000);
+
+            $(this).prop('disabled', true);
+        });
+
+        // 停止按钮点击事件
+        $('#stop-btn').click(stopAlarm);
+
+        // 初始化时间显示
+        setInterval(updateTime, 1000);
+        updateTime();
+    });
+</script>

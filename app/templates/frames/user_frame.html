@@ -1,0 +1,198 @@
+<!-- Bootstrap CSS -->
+{% block resource %}
+<style>
+    .action-column {
+        min-width: 160px;
+    }
+    .table-container {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+<div class="container mt-4">
+    <!-- 操作栏 -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
+                <i class="bi bi-plus-lg"></i> 添加用户
+            </button>
+        </div>
+        <div class="col-md-6">
+            <input type="text" class="form-control" id="searchInput" placeholder="搜索用户...">
+        </div>
+    </div>
+
+    <!-- 用户表格 -->
+    <div class="table-container">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>角色</th>
+                <th class="action-column">操作</th>
+            </tr>
+            </thead>
+            <tbody id="userTableBody">
+            <!-- 示例数据 -->
+            <tr>
+                <td>1</td>
+                <td>张三</td>
+                <td>张三</td>
+                <td>zhangsan@example.com</td>
+                <td>管理员</td>
+                <td>
+                    <button class="btn btn-sm btn-warning edit-btn">编辑</button>
+                    <button class="btn btn-sm btn-danger delete-btn">删除</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{%block javascript %}
+<script>
+    function loadUsers(){
+        // 清空现有内容
+      $('#userTableBody').empty().append('<tr><td colspan="5">加载中...</td></tr>');
+
+      $.ajax({
+        url: '/author/list_users',
+        type: 'POST',
+        data: {key:$("#searchInput").val()},
+        success: function(response) {
+          // 清空加载状态
+          $('#userTableBody').empty();
+          console.log(response);
+
+          // 动态生成表格行
+          response.forEach(function(user) {
+            const rowHtml = `
+              <tr data-userid="${user.id}">
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td>${user.role}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning edit-btn">编辑</button>
+                  <button class="btn btn-sm btn-danger delete-btn">删除</button>
+                </td>
+              </tr>
+            `;
+            $('#userTableBody').append(rowHtml);
+          });
+
+          // 若无数据时显示提示
+          if(response.length === 0) {
+            $('#userTableBody').html('<tr><td colspan="5">暂无用户数据</td></tr>');
+          }
+        },
+        error: function(xhr) {
+          $('#userTableBody').html(`
+            <tr>
+              <td colspan="5" class="text-danger">
+                数据加载失败 (状态码: ${xhr.status})
+              </td>
+            </tr>
+          `);
+        }
+      });
+
+    }
+
+    async function hashPassword(password, salt) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + salt);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    $(document).ready(function() {
+        let currentEditId = null;
+        loadUsers();
+
+        // 表单提交处理
+        $('#userForm').submit(function(e) {
+            e.preventDefault();
+            const formData = {
+                id: $('input[name="user_id"]').val(),
+                username: $('input[name="username"]').val(),
+                name: $('input[name="name"]').val(),
+                email: $('input[name="email"]').val(),
+                role: $('select[name="role"]').val()
+            };
+            $.ajax({
+                url:"/author/add_user",
+                type:"POST",
+                data:formData,
+                success:function(res){
+
+                    loadUsers();
+                }
+            });
+            $('#userModal').modal('hide');
+            resetForm();
+        });
+
+        // 删除用户
+        $('#userTableBody').on('click', '.delete-btn', function() {
+            const row = $(this).closest('tr');
+            window.CustomDialog.confirm(
+            '确定要删除该用户吗？',
+            () => {
+                $.ajax({
+                    url:"/author/add_user",
+                    type:"POST",
+                    data:{id:row.find('td:eq(0)').text(),deleted:true},
+                    success:function(res){
+                        loadUsers();
+                    }
+                })
+            },
+            () => { /* 取消操作 */ }
+        );
+
+        });
+
+        // 编辑用户
+        $('#userTableBody').on('click', '.edit-btn', function() {
+            const row = $(this).closest('tr');
+            currentEditId = row.data('id');
+
+            $('#modalTitle').text('编辑用户');
+            $('input[name="user_id"]').val(row.find('td:eq(0)').text());
+            $('input[name="username"]').val(row.find('td:eq(1)').text());
+            $('input[name="name"]').val(row.find('td:eq(2)').text());
+            $('input[name="email"]').val(row.find('td:eq(3)').text());
+            $('select[name="role"]').val(row.find('td:eq(4)').text());
+
+            $('#userModal').modal('show');
+        });
+
+        // 搜索功能
+        $('#searchInput').on('input', function() {
+            const searchText = $(this).val().toLowerCase();
+            $('#userTableBody tr').each(function() {
+                const name = $(this).find('td:eq(1)').text().toLowerCase();
+                $(this).toggle(name.includes(searchText));
+            });
+        });
+
+        // 重置表单
+        function resetForm() {
+            currentEditId = null;
+            $('#modalTitle').text('添加用户');
+            $('#userForm')[0].reset();
+        }
+
+        // 模态框关闭时重置
+        $('#userModal').on('hidden.bs.modal', resetForm);
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,267 @@
+<style>
+    .me-container {
+        background-color: #f8f9fa;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .nav-pills .nav-link.active {
+        background-color: #764ba2;
+    }
+    .tab-content {
+        background-color: white;
+        border-radius: 0 0 15px 15px;
+        padding: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .info-card {
+        border-left: 4px solid #667eea;
+    }
+</style>
+<script src="{{ url_for('static', filename='js/libs/md5.min.js') }}"></script>
+<div class="container me-container py-5">
+    <!-- 用户信息头部 -->
+    <div class="profile-header p-4 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <img src="https://picsum.photos/200/200?person" alt="用户头像" class="profile-img rounded-circle mb-3">
+            </div>
+            <div class="col-md-10">
+                <h2>{{ session.user.username }}</h2>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <p><i class="fas fa-envelope me-2"></i> {{ user.email or "--" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><i class="fas fa-phone me-2"></i> {{ user.phone_no or '--' }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><i class="fas fa-calendar-alt me-2"></i> 注册于 {{ user.create_time or '--' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航菜单 -->
+    <ul class="nav nav-pills mb-4" id="profileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile"
+                    type="button">
+                <i class="fas fa-user me-2"></i>个人资料
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="password-tab" data-bs-toggle="pill" data-bs-target="#password" type="button">
+                <i class="fas fa-key me-2"></i>修改密码
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="portrait-tab" data-bs-toggle="pill" data-bs-target="#portrait" type="button">
+                <i class="fas fa-chart-pie me-2"></i>用户画像
+            </button>
+        </li>
+    </ul>
+
+    <!-- 内容区域 -->
+    <div class="tab-content" id="profileTabsContent">
+        <!-- 个人资料 -->
+        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+            <h4 class="mb-4"><i class="fas fa-user me-2"></i>个人资料</h4>
+            <form>
+                <div class="row mb-3">
+                    <input type="hidden" id="user-id-input" value="{{ user.id }}">
+                    <div class="col-md-6">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control user-name" value="{{ user.username }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">电子邮箱</label>
+                        <input type="email" class="form-control user-email" value="{{ user.email or ''  }}">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">手机号码</label>
+                        <input type="tel" class="form-control user-phone" value="{{ user.phone_no or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">生日</label>
+                        <input type="date" class="form-control user-birthday" value="{{ user.birthday}}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">个人简介</label>
+                    <textarea class="form-control user-desc" rows="3">{{ user.desc or '' }}</textarea>
+                </div>
+
+            </form>
+            <button type="submit" id="save-user-btn" class="btn btn-primary">保存更改</button>
+        </div>
+
+        <!-- 修改密码 -->
+        <div class="tab-pane fade" id="password" role="tabpanel">
+            <h4 class="mb-4"><i class="fas fa-key me-2"></i>修改密码</h4>
+            <form id="changePasswordForm">
+                <div class="mb-3">
+                    <label class="form-label">当前密码</label>
+                    <input type="password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">新密码</label>
+                    <input type="password" class="form-control" required>
+                    <small class="form-text text-muted">密码长度至少8位，包含字母和数字</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">确认新密码</label>
+                    <input type="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">修改密码</button>
+            </form>
+        </div>
+
+        <!-- 用户画像 -->
+        <div class="tab-pane fade" id="portrait" role="tabpanel">
+            <h4 class="mb-4"><i class="fas fa-chart-pie me-2"></i>用户画像</h4>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card info-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-sign-in-alt me-2"></i>登录行为</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    最近登录时间
+                                    <span class="text-muted">2025-08-22 15:30:22</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    本月登录次数
+                                    <span class="badge bg-primary rounded-pill">18</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    常用设备
+                                    <span class="text-muted">iPhone 13</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card info-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-heart me-2"></i>兴趣偏好</h5>
+                            <div class="mb-3">
+                                <label class="form-label">技术领域</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-info">前端开发</span>
+                                    <span class="badge bg-info">JavaScript</span>
+                                    <span class="badge bg-info">Bootstrap</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">活跃时段</label>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: 70%">上午 (70%)</div>
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 30%">晚上
+                                        (30%)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card info-card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>活动统计</h5>
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3>128</h3>
+                            <p class="text-muted">总登录次数</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3>24</h3>
+                            <p class="text-muted">发布文章</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3>56</h3>
+                            <p class="text-muted">发表评论</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3>12</h3>
+                            <p class="text-muted">收藏内容</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $("#save-user-btn").click(function(){
+            $.post(
+              "/author/add_user",  // 请求的URL
+              {
+                id:$("#user-id-input").val(),
+                username: $(".user-name").val(),
+                email: $(".user-email").val(),
+                phone_no:$(".user-phone").val(),
+                desc:$(".user-desc").val(),
+                birthday:$(".user-birthday").val()
+              },  // 发送的数据（对象形式）
+              function(response) {  // 成功回调函数
+                window.CustomDialog.alert("保存成功！",function(){
+                    window.location.reload();
+                });
+              },
+              "json"  // 预期服务器返回的数据类型（可选，如json、text、html等）
+            );
+        });
+        // 密码表单验证
+        $('#changePasswordForm').on('submit', function(e) {
+            e.preventDefault();
+
+            let isValid = true;
+            const currentPassword = $(this).find('input[type="password"]').eq(0).val();
+            const newPassword = $(this).find('input[type="password"]').eq(1).val();
+            const confirmPassword = $(this).find('input[type="password"]').eq(2).val();
+
+            // 简单验证逻辑
+            if (!currentPassword) {
+                alert('请输入当前密码');
+                isValid = false;
+            }
+
+            if (newPassword.length < 8 || !/\d/.test(newPassword) || !/[a-zA-Z]/.test(newPassword)) {
+                alert('密码长度至少8位，且包含字母和数字');
+                isValid = false;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('两次输入的新密码不一致');
+                isValid = false;
+            }
+
+            if (isValid) {
+                alert('密码修改成功！');
+                $(this)[0].reset();
+            }
+        });
+
+        // 头像点击事件
+        $('.profile-img').on('click', function() {
+            alert('打开文件选择器上传新头像');
+        });
+    });
+</script>
