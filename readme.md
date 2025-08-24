@@ -9,3 +9,13 @@
 ### 个人收藏
 ### 系统管理
 
+技术栈： python flask boostrap jquery quill(在线夫文本编辑器)
+# 二、初始化数据库
+  执行initdb.sh
+# 三、添加管理员用户
+  > sqlite3 app.db
+  sqlite> insert into users('username','name','deleted','password') values('admin','admin',0,'21232f297a57a5a743894a0e4a801fc3');
+  21232f297a57a5a743894a0e4a801fc3 为 admin 的md5值
+  
+
+
