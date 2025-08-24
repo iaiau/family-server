@@ -1,7 +1,8 @@
-from sqlalchemy import and_, select
+from sqlalchemy import select
 
 from app.models import File, db
 from app.services import model_to_dict
+
 
 def get_files(param):
     query = select(File).where(File.deleted == False)

@@ -1,10 +1,11 @@
 import os
 
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, jsonify
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from app.models import Experience, db, File
+from app.services import model_to_dict
 
 # 创建蓝图对象（第一个参数是蓝图名称）
 experience_bp = Blueprint('experiences', __name__, url_prefix='/experiences')
@@ -36,7 +37,7 @@ def save_exp():
 
     db.session.flush()
 
-    return {"status": "success","_id":exp.id}
+    return {"status": "success", "_id": exp.id}
 
 
 @experience_bp.route("/exp_content/<int:_id>", methods=["GET"])
@@ -47,7 +48,7 @@ def exp_content(_id):
                            content_frame="frames/experience_content.html")
 
 
-@experience_bp.route('/upload',methods=['POST'])
+@experience_bp.route('/upload', methods=['POST'])
 @login_required
 def upload():
     UPLOAD_FOLDER = current_app.root_path + '/app/static/uploads/exp/article'
@@ -63,4 +64,19 @@ def upload():
         if file:  # 添加文件类型验证
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_FOLDER, filename))
-    return {'status': 'success','path':'/static/uploads/exp/article/' + filename}
+    return {'status': 'success', 'path': '/static/uploads/exp/article/' + filename}
+
+
+@experience_bp.route("/list", methods=["POST"])
+@login_required
+def list_():
+    kw = request.form["kw"]
+
+    if not kw:
+        data = db.session.query(Experience).all()
+        data = [model_to_dict(e) for e in data]
+        return jsonify({"data": data , "status": "success"})
+    else:
+        data = Experience.query.filter(Experience.title.like("%" + kw + "%")).all()
+        data = [model_to_dict(e) for e in data]
+        return jsonify({"data": data, "status": "success"})

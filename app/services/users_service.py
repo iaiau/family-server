@@ -1,4 +1,3 @@
-from scour.svg_regex import svg_lexer
 from sqlalchemy import select, or_
 
 from app.models import File, db, User
