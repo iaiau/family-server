@@ -1,10 +1,10 @@
 import os
 
-from flask import (Blueprint, render_template, current_app, send_file)
+from flask import (Blueprint, render_template, current_app, send_file, request, jsonify)
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 
 from app.models import File, db
-from app.page_utils import *
 from app.services import model_to_dict
 from app.services.file_service import get_files
 from app.utils import allow_cross_domain
@@ -19,20 +19,14 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4'}
 def index():
     return render_template('index.html', content_frame="frames/file_frame.html")
 
-@file_bp.route('/list',methods=['POST'])
+@file_bp.route('/list',methods=['GET'])
+@login_required
 def list():
-
-    form = request.form
-    file_list = get_files(form)
-    page = None
-    try:
-        page = form["page"]
-    except Exception as e:
-        pass
-    map = {"data":file_list,"page":page}
-    return jsonify(map)
+    result = get_files(request.args)
+    return jsonify(result)
 
 @file_bp.route('/<int:file_id>', methods=['POST'])
+@login_required
 def get_file(file_id):
     file = File.query.get_or_404(file_id)
     return jsonify(model_to_dict(file))

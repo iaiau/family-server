@@ -1,11 +1,10 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from sqlalchemy import inspect
+
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-import hashlib
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
 
 class Base(db.Model):
     __abstract__ = True
@@ -24,7 +23,7 @@ class Family(Base):
     owner = db.Column(db.Integer)
 
 
-class User(UserMixin,Base):
+class User(UserMixin, Base):
     __tablename__ = 'users'
     username = db.Column(db.String(50), unique=True)  # 用户名
     name = db.Column(db.String(30))  # 名字
@@ -33,7 +32,7 @@ class User(UserMixin,Base):
     phone_no = db.Column(db.String(20))  # 电话
     email = db.Column(db.String(100))  # email
     role = db.Column(db.String(100))
-    desc = db.Column(db.String(1000)) # 简介
+    desc = db.Column(db.String(1000))  # 简介
     age = db.Column(db.Integer)  # 年龄
     gender = db.Column(db.String(1))  # 性别
     birthday = db.Column(db.Date)
@@ -42,7 +41,6 @@ class User(UserMixin,Base):
     spouse = db.Column(db.Integer)  # 配偶
     is_guest = db.Column(db.Boolean)  # 是否访客
     is_family = db.Column(db.Boolean, default=False)  # 是否家庭成员
-
 
 
 class File(Base):
@@ -68,5 +66,6 @@ class Experience(Base):
     title = db.Column(db.String(100))
     content = db.Column(db.String(10240))
     author = db.Column(db.Integer)
+    read_count = db.Column(db.Integer, default=0)
     is_private = db.Column(db.Boolean, default=True)
     share_to = db.Column(db.String(2000))

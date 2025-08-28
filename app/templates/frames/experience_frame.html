@@ -49,13 +49,14 @@
     <div class="row" id="expContainer">
         <!-- 文章列表将通过jQuery动态加载 -->
     </div>
+    {% include 'frames/paginate.html' %}
 </div>
 
 <!-- 悬浮添加按钮 -->
 <a href="/experiences/new_exp" class="floating-btn btn btn-primary">
     <i class="fas fa-plus"></i>
 </a>
-
+<script src="{{ url_for('static', filename='js/dateutil.js') }}"></script>
 <script>
     $(document).ready(function() {
         // 加载文章列表
@@ -76,13 +77,14 @@
                 }
 
                 filteredexps.forEach(exp => {
+                    exp.create_time = $.DateUtil.format(new Date(exp.create_time),'yyyy-MM-dd HH:mm');
                     const expHtml = `
                         <div class="col-md-6 mb-4 exp-column" data-id="${exp.id}">
                             <div class="card exp-card h-100">
                                 <div class="card-body">
                                     <h5 class="card-title">${exp.title}</h5>
                                     <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <small class="text-muted">${exp.create_time} · 10次阅读</small>
+                                        <small class="text-muted">${exp.create_time} · ${exp.read_count}次阅读</small>
                                     </div>
                                 </div>
                             </div>

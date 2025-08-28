@@ -56,45 +56,38 @@
         </div>
     </form>
     <div id="fileList" class="alert alert-info" style=""></div>
-
-    <!-- 预览模态框 -->
-    <div class="modal fade" id="previewModal">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="previewTitle"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center" id="previewContent">
-                    <!-- 动态加载预览内容 -->
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="foot-paginate"></div>
 </div>
-
-
-
+<link href="{{ url_for('static', filename='css/local/page.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
 <script>
     // 初始化加载数据
-    $(document).ready(() => loadFiles());
+    //$(document).ready(() => loadFiles());
+    window.page = new Pagination({
+        url:"/files/list",
+        params:{
+            filename: $('#filename').val(),
+            filetype: $('#filetype').val(),
+            start_date: $('#startDate').val(),
+            end_date: $('#endDate').val(),
+            page:1,
+            per_page:10
+        },
+        container:"#foot-paginate",
+        callback:function(res){
+            renderFiles(res);
+        }
+    });
 
     // 加载文件列表
     function loadFiles() {
-        $.ajax({
-            url: '/files/list',
-            type: 'POST',
-            data: {
-                filename: $('#filename').val(),
-                filetype: $('#filetype').val(),
-                start_date: $('#startDate').val(),
-                end_date: $('#endDate').val()
-            },
-            success: renderFiles,
-            error: () => window.CustomDialog.alert('数据加载失败', () => {
-                console.log('Alert 数据加载失败');
-            })
-        });
+        window.page.options.params.filename = $('#filename').val();
+        window.page.options.params.filetype = $('#filetype').val();
+        window.page.options.params.start_date = $('#startDate').val();
+        window.page.options.params.end_date = $('#endDate').val();
+        window.page.options.params.page = 1;
+        window.page.options.params.per_page = 10;
+        window.page.loadData();
     }
 
     // 搜索功能
@@ -176,12 +169,12 @@
 
         console.log(res);
 
-        if(!res.data || res.data.length == 0){
+        if(!res || res.length == 0){
             $('#fileList').append(`<div>未查询到文件</div>`);
             return;
         }
 
-        res.data.forEach(file => {
+        res.forEach(file => {
             const fileItem = `
                 <div class="col-md-12 list-item">
                     <div class="card shadow-sm mb-3">

@@ -37,20 +37,9 @@
             </tr>
             </thead>
             <tbody id="userTableBody">
-            <!-- 示例数据 -->
-            <tr>
-                <td>1</td>
-                <td>张三</td>
-                <td>张三</td>
-                <td>zhangsan@example.com</td>
-                <td>管理员</td>
-                <td>
-                    <button class="btn btn-sm btn-warning edit-btn">编辑</button>
-                    <button class="btn btn-sm btn-danger delete-btn">删除</button>
-                </td>
-            </tr>
             </tbody>
         </table>
+        {% include 'frames/paginate.html' %}
     </div>
 </div>
 

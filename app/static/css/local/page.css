@@ -1,0 +1,77 @@
+#foot-paginate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* 基础项样式 */
+.page-item {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+/* 页码链接通用样式 */
+.page-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 100%;
+  padding: 0 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: currentColor;
+  transition: all 0.2s;
+}
+
+/* 正常状态页码 */
+.page-num:hover {
+  background-color: #edf2f7;
+}
+
+/* 激活页码 */
+.page-item.active .page-link {
+  background-color: #3182ce;
+  color: white;
+  font-weight: 500;
+}
+
+/* 禁用状态 */
+.page-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 分页选择器 */
+.per-page {
+  height: 100%;
+  padding: 0 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* 页码输入框 */
+.dynamic-page-no {
+  width: 50px;
+  height: 100%;
+  padding: 0 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* 导航箭头特殊样式 */
+.page-link.prev,
+.page-link.next {
+  font-size: 18px;
+  line-height: 1;
+}

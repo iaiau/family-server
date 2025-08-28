@@ -44,6 +44,7 @@ def save_exp():
 @login_required
 def exp_content(_id):
     exp = Experience.query.filter(Experience.id == _id).first()
+    exp.read_count=(exp.read_count if exp.read_count else 0) + 1
     return render_template("index.html", title=exp.title, content=exp.content,
                            content_frame="frames/experience_content.html")
 
@@ -75,7 +76,7 @@ def list_():
     if not kw:
         data = db.session.query(Experience).all()
         data = [model_to_dict(e) for e in data]
-        return jsonify({"data": data , "status": "success"})
+        return jsonify({"data": data, "status": "success"})
     else:
         data = Experience.query.filter(Experience.title.like("%" + kw + "%")).all()
         data = [model_to_dict(e) for e in data]
