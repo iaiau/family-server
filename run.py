@@ -36,7 +36,7 @@ family_app = Flask(__name__, instance_path=store_path,static_folder='app/static'
 from flask_cors import CORS
 CORS(family_app, resources={r"/*": {"origins": "*"}})
 
-family_app.secret_key = "a3f7e29b4c8d1065"
+# family_app.secret_key = "a3f7e29b4c8d1065"
 login_manager = LoginManager(family_app)
 login_manager.login_view = "/author/login"
 

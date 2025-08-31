@@ -97,7 +97,7 @@ class Pagination {
     // 页码
     for(let i = 1; i <= last_page; i++) {
       pagination.append(`
-        <li class="page-item ${i === page_no ? 'active' : ''}">
+        <li class="page-item ${i === page_no ? 'active disabled' : ''}">
           <a class="page-link page-num" href="#" data-page="${i}">${i}</a>
         </li>
       `);

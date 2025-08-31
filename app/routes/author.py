@@ -49,17 +49,20 @@ def users():
     return render_template("index.html", userModal=True, content_frame="frames/user_frame.html")
 
 
-@author_bp.route("/list_users", methods=["POST"])
+@author_bp.route("/list_users", methods=["GET"])
 @login_required
 def list_users_():
-    return jsonify(list_users(request.form))
+    return jsonify(list_users(request.args))
 
 @login_required
 @author_bp.route("/add_user",methods=["POST"])
 def add_user():
     _id = request.form["id"]
     form = request.form.to_dict()
-    form["birthday"] = datetime.strptime(form["birthday"], '%Y-%m-%d').date()
+    try:
+        form["birthday"] = datetime.strptime(form["birthday"], '%Y-%m-%d').date()
+    except Exception as e:
+        pass
     if not _id:
         db.session.add(User(username=form["username"],name=form["name"],
                             email=form["email"],role=form["role"]))

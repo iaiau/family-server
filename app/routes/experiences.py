@@ -4,7 +4,8 @@ from flask import Blueprint, render_template, request, current_app, jsonify
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
-from app.models import Experience, db, File
+from app.models import Experience, db
+from app.page_utils import get_page
 from app.services import model_to_dict
 
 # 创建蓝图对象（第一个参数是蓝图名称）
@@ -44,7 +45,7 @@ def save_exp():
 @login_required
 def exp_content(_id):
     exp = Experience.query.filter(Experience.id == _id).first()
-    exp.read_count=(exp.read_count if exp.read_count else 0) + 1
+    exp.read_count = (exp.read_count if exp.read_count else 0) + 1
     return render_template("index.html", title=exp.title, content=exp.content,
                            content_frame="frames/experience_content.html")
 
@@ -68,16 +69,20 @@ def upload():
     return {'status': 'success', 'path': '/static/uploads/exp/article/' + filename}
 
 
-@experience_bp.route("/list", methods=["POST"])
+@experience_bp.route("/list", methods=["GET"])
 @login_required
 def list_():
-    kw = request.form["kw"]
+    kw = request.args["kw"]
+    query = Experience.query.filter(Experience.deleted == False)
 
     if not kw:
-        data = db.session.query(Experience).all()
+        query, page = get_page(query, request.args["page"], request.args["per_page"])
+        data = query.all()
         data = [model_to_dict(e) for e in data]
-        return jsonify({"data": data, "status": "success"})
+        return jsonify({"data": data, "page": page, "status": "success"})
     else:
-        data = Experience.query.filter(Experience.title.like("%" + kw + "%")).all()
+        query = query.filter(Experience.title.like("%" + kw + "%"))
+        query, page = get_page(query, request.args["page"], request.args["per_page"])
+        data = query .all()
         data = [model_to_dict(e) for e in data]
-        return jsonify({"data": data, "status": "success"})
+        return jsonify({"data": data, "page": page, "status": "success"})

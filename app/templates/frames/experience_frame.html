@@ -49,7 +49,7 @@
     <div class="row" id="expContainer">
         <!-- 文章列表将通过jQuery动态加载 -->
     </div>
-    {% include 'frames/paginate.html' %}
+    <div id="foot-paginate"></div>
 </div>
 
 <!-- 悬浮添加按钮 -->
@@ -57,53 +57,71 @@
     <i class="fas fa-plus"></i>
 </a>
 <script src="{{ url_for('static', filename='js/dateutil.js') }}"></script>
+<link href="{{ url_for('static', filename='css/local/page.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
 <script>
-    $(document).ready(function() {
-        // 加载文章列表
-        function loadexps(keyword = '') {
-            $.post("/experiences/list",{kw:$("#searchInput").val()},(res)=>{
-                $('#expContainer').empty();
+    window.page = new Pagination({
+        url:"/experiences/list",
+        params:{
+            kw: $("#searchInput").val(),
+            page:1,
+            per_page:10
+        },
+        container:"#foot-paginate",
+        callback:function(res){
+            renderExps(res);
+        }
+    });
 
-                const filteredexps = res.data;
+    function renderExps(res){
+        $('#expContainer').empty();
 
-                if(filteredexps.length === 0) {
-                    $('#expContainer').html(`
-                        <div class="col-12 text-center py-5">
-                            <h4 class="text-muted">${keyword ? '没有找到相关文章' : '暂无经验分享'}</h4>
-                            ${!keyword ? '<button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newexpModal">新建第一篇</button>' : ''}
-                        </div>
-                    `);
-                    return;
-                }
+        const filteredexps = res;
 
-                filteredexps.forEach(exp => {
-                    exp.create_time = $.DateUtil.format(new Date(exp.create_time),'yyyy-MM-dd HH:mm');
-                    const expHtml = `
-                        <div class="col-md-6 mb-4 exp-column" data-id="${exp.id}">
-                            <div class="card exp-card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">${exp.title}</h5>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <small class="text-muted">${exp.create_time} · ${exp.read_count}次阅读</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    $('#expContainer').append(expHtml);
-                });
-                $(".exp-column").click(function(){
-                    var id = $(this).data("id");
-                    window.location.href="/experiences/exp_content/" + id;
-                });
-            });
+        if(filteredexps.length === 0) {
+            $('#expContainer').html(`
+                <div class="col-12 text-center py-5">
+                    <h4 class="text-muted">${keyword ? '没有找到相关文章' : '暂无经验分享'}</h4>
+                    ${!keyword ? '<button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newexpModal">新建第一篇</button>' : ''}
+                </div>
+            `);
+            return;
         }
 
-        loadexps();
+        filteredexps.forEach(exp => {
+            exp.create_time = $.DateUtil.format(new Date(exp.create_time),'yyyy-MM-dd HH:mm');
+            const expHtml = `
+                <div class="col-md-6 mb-4 exp-column" data-id="${exp.id}">
+                    <div class="card exp-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${exp.title}</h5>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <small class="text-muted">${exp.create_time} · ${exp.read_count}次阅读</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#expContainer').append(expHtml);
+        });
+        $(".exp-column").click(function(){
+            var id = $(this).data("id");
+            window.location.href="/experiences/exp_content/" + id;
+        });
+    }
+    $(document).ready(function() {
+        // 加载文章列表
+        function loadexps() {
+            window.page.options.params.kw = $("#searchInput").val();
+            window.page.options.params.page = 1;
+            window.page.options.params.per_page = 10;
+            window.page.loadData();
+        }
 
         // 搜索功能
         $('#searchInput').on('input', function() {
-            loadexps($(this).val().trim());
+            window.page.options.params.kw = $("#searchInput").val();
+            loadexps();
         });
     });
 </script>

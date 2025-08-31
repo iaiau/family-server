@@ -67,5 +67,13 @@ class Experience(Base):
     content = db.Column(db.String(10240))
     author = db.Column(db.Integer)
     read_count = db.Column(db.Integer, default=0)
+    thumbs_up = db.Column(db.Integer)
     is_private = db.Column(db.Boolean, default=True)
     share_to = db.Column(db.String(2000))
+
+class Comment(Base):
+    __tablename__ = 'comments'
+    exp_id = db.Column(db.Integer)
+    comment = db.Column(db.String(1000))
+    parent_id = db.Column(db.Integer)
+    reviewer = db.Column(db.Integer)
