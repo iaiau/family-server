@@ -1,10 +1,10 @@
 import os
 
-from flask import Blueprint, render_template, request, current_app, jsonify
+from flask import Blueprint, render_template, request, current_app, jsonify,session
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
-from app.models import Experience, db
+from app.models import Experience, db, Comment
 from app.page_utils import get_page
 from app.services import model_to_dict
 
@@ -46,7 +46,7 @@ def save_exp():
 def exp_content(_id):
     exp = Experience.query.filter(Experience.id == _id).first()
     exp.read_count = (exp.read_count if exp.read_count else 0) + 1
-    return render_template("index.html", title=exp.title, content=exp.content,
+    return render_template("index.html", id = exp.id ,title=exp.title, content=exp.content,
                            content_frame="frames/experience_content.html")
 
 
@@ -86,3 +86,22 @@ def list_():
         data = query .all()
         data = [model_to_dict(e) for e in data]
         return jsonify({"data": data, "page": page, "status": "success"})
+
+@experience_bp.route("/list_comments/<int:exp_id>",methods=["POST"])
+@login_required
+def list_comments(exp_id):
+    comments = Comment.query.filter(Comment.exp_id == exp_id).filter(Comment.deleted == False).all()
+    return jsonify([model_to_dict(c) for c in comments])
+
+@experience_bp.route("/add/comment", methods=["POST"])
+@login_required
+def add_comment():
+    comment = Comment()
+    comment.comment = request.form["content"]
+    comment.exp_id = request.form["exp_id"]
+    comment.created_by = session["user"]["id"]
+    comment.modified_by = session["user"]["id"]
+    comment.reviewer = session["user"]["id"]
+    db.session.add(comment)
+
+    return jsonify({"success":True})

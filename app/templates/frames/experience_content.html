@@ -383,46 +383,17 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">发表评论</h5>
-                        <form id="comment-form">
-                            <div class="mb-3">
-                                <textarea class="form-control" rows="3" placeholder="写下你的评论..."
+                        <div class="mb-3">
+                                <textarea id="content-area" name="" class="form-control" rows="3" placeholder="写下你的评论..."
                                           required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">提交评论</button>
-                        </form>
+                        </div>
+                        <button id="comment-btn" type="submit" class="btn btn-primary">提交评论</button>
                     </div>
                 </div>
 
                 <!-- 评论列表 -->
                 <div class="list-group">
-                    <div class="list-group-item mb-3">
-                        <div class="d-flex">
-                            <img src="https://picsum.photos/50/50?random=3" alt="用户头像" class="rounded-circle me-3"
-                                 width="40" height="40">
-                            <div>
-                                <div class="d-flex justify-content-between">
-                                    <h6 class="mb-1">李前端</h6>
-                                    <small class="text-muted">2天前</small>
-                                </div>
-                                <p class="mb-1">文章讲得很透彻，特别是闭包在实际项目中的应用部分，对我帮助很大！</p>
-                                <small><a href="#" class="text-muted">回复</a></small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="list-group-item mb-3">
-                        <div class="d-flex">
-                            <img src="https://picsum.photos/50/50?random=4" alt="用户头像" class="rounded-circle me-3"
-                                 width="40" height="40">
-                            <div>
-                                <div class="d-flex justify-content-between">
-                                    <h6 class="mb-1">王码农</h6>
-                                    <small class="text-muted">3天前</small>
-                                </div>
-                                <p class="mb-1">能否再详细讲解一下闭包的内存管理？</p>
-                                <small><a href="#" class="text-muted">回复</a></small>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -437,24 +408,36 @@
 </footer>
 <script>
     $(document).ready(function() {
-        // 主题切换
-        $('#theme-toggle').click(function() {
-            $('body').toggleClass('bg-dark text-white');
-            $(this).find('i').toggleClass('fa-moon fa-sun');
-            $(this).toggleClass('btn-outline-light btn-outline-dark');
-        });
-
-        // 评论表单提交
-        $('#comment-form').submit(function(e) {
-            e.preventDefault();
-            alert('评论已提交，审核通过后显示！');
-            $(this).find('textarea').val('');
-        });
-
-        // 代码高亮
-        $('pre code').each(function() {
-            $(this).addClass('p-3 d-block bg-light rounded');
-        });
+        function loadComments(){
+            $.post("/experiences/list_comments/" + {{id}}, function(res){
+                res.forEach(comment=>{
+                    $(".list-group").append(`<div class="list-group-item mb-3">
+                            <div class="d-flex">
+                                <img src="https://picsum.photos/50/50?random=3" alt="用户头像" class="rounded-circle me-3"
+                                     width="40" height="40">
+                                <div>
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="mb-1">${comment.created_by}</h6>
+                                        <small class="text-muted">2天前</small>
+                                    </div>
+                                    <p class="mb-1">${comment.comment}</p>
+                                    <small><a href="#" class="text-muted">回复</a></small>
+                                </div>
+                            </div>
+                        </div>`);
+                });
+            });
+        }
+        loadComments();
+        $("#comment-btn").on("click",function(){
+        $.post("/experiences/add/comment",{exp_id:{{id}},content:$("#content-area").val()},
+            function(res){
+                $("#content-area").val("");
+                loadComments();
+            }
+        );
     });
+    });
+
 </script>
 

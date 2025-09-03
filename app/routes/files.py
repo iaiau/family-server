@@ -16,6 +16,7 @@ file_bp = Blueprint('files', __name__, url_prefix='/files')
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4'}
 
 @file_bp.route('/')
+@login_required
 def index():
     return render_template('index.html', content_frame="frames/file_frame.html")
 
@@ -33,6 +34,7 @@ def get_file(file_id):
 
 @file_bp.route('/upload',methods=['POST'])
 @allow_cross_domain
+@login_required
 def upload():
     UPLOAD_FOLDER = current_app.root_path + '/app/static/uploads/'
     if 'files[]' not in request.files:
@@ -55,11 +57,8 @@ def upload():
 
     return {'status': 'success', 'files': results}
 
-@file_bp.route('/gallery')
-def gallery():
-    return render_template('gallery.html')
-
 @file_bp.route('/download/<int:file_id>',methods=['POST','GET'])
+@login_required
 def download_file(file_id):
     file = File.query.get_or_404(file_id)
     return send_file(
