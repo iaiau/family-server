@@ -5,6 +5,7 @@ from flask_login import login_user,login_required,logout_user,current_user
 
 from app.services.users_service import list_users,getUserByName
 from app.models import User, db
+from app.wrappers.rolewrapper import *
 
 
 # 创建蓝图对象（第一个参数是蓝图名称）
@@ -31,7 +32,8 @@ def login_action():
             'phone_no' : user.phone_no,
             'email' : user.email,
             'desc' : user.desc,
-            'create_time' : user.create_time
+            'create_time' : user.create_time,
+            "role": user.role
         }
         return jsonify({"result":"success"})
 
@@ -44,18 +46,22 @@ def logout():
     return redirect("/author/login")
 
 @author_bp.route("/users", methods=["GET"])
+@role_required("admin")
 @login_required
 def users():
     return render_template("index.html", userModal=True, content_frame="frames/user_frame.html")
 
 
 @author_bp.route("/list_users", methods=["GET"])
+@role_required("admin")
 @login_required
 def list_users_():
     return jsonify(list_users(request.args))
 
-@login_required
+
 @author_bp.route("/add_user",methods=["POST"])
+@role_required("admin")
+@login_required
 def add_user():
     _id = request.form["id"]
     form = request.form.to_dict()
