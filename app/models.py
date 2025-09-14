@@ -56,9 +56,10 @@ class File(Base):
 
 class Memo(Base):
     __tablename__ = 'memos'
-    content_path = db.Column(db.String(1000))
-    is_family = db.Column(db.Boolean, default=False)
-    author = db.Column(db.Integer)
+    title = db.Column(db.String(100))
+    content = db.Column(db.String(1000))
+    priority = db.Column(db.String(10))
+    category = db.Column(db.String(10))
 
 
 class Experience(Base):

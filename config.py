@@ -9,7 +9,7 @@ DEBUG=True
 USE_DEBUGGER=True
 SECRET_KEY='a3f7e29b4c8d1065'
 
-# database settings
+# database settin
 SQLALCHEMY_DATABASE_URI='sqlite:///app.db'
 SQLALCHEMY_ECHO=True
 SQLALCHEMY_TRACK_MODIFICATIONS=True

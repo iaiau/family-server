@@ -80,6 +80,27 @@
 
     .modal { z-index: 1050 !important; }
     .modal-backdrop { z-index: 1040 !important; }
+
+    .floating-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        font-size: 24px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    .floating-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
 </style>
 <!-- 主内容区 -->
 <div class="container py-2">
@@ -92,7 +113,7 @@
             </div>
         </div>
         <div class="col-md-3 mb-3 mb-md-0">
-            <select id="categoryFilter" class="form-select">
+            <select title="category" id="categoryFilter" class="form-select">
                 <option value="all">所有分类</option>
                 <option value="work">工作</option>
                 <option value="life">生活</option>
@@ -101,7 +122,7 @@
             </select>
         </div>
         <div class="col-md-3">
-            <select id="priorityFilter" class="form-select">
+            <select tile="priority" id="priorityFilter" class="form-select">
                 <option value="all">所有优先级</option>
                 <option value="high">高优先级</option>
                 <option value="medium">中优先级</option>
@@ -115,13 +136,130 @@
         <!-- 备忘录卡片将通过JS动态生成 -->
     </div>
 
-    <!-- 空状态提示 -->
-    <div id="emptyState" class="text-center py-10 d-none">
-        <i class="fas fa-sticky-note text-secondary fs-1 mb-3"></i>
-        <h3 class="text-secondary">暂无备忘录</h3>
-        <p class="text-muted mb-4">点击"新增备忘录"开始记录你的想法</p>
-        <button class="btn btn-primary" id="emptyAddBtn">
-            <i class="fas fa-plus me-1"></i>新增备忘录
-        </button>
-    </div>
+    <div id="foot-paginate"></div>
+
+    <a href="javascript:$('#memoModal').modal('show');" class="floating-btn btn btn-primary">
+        <i class="fas fa-plus"></i>
+    </a>
 </div>
+<link href="{{ url_for('static', filename='css/local/page.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/pagination.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dateutil.js') }}"></script>
+<script>
+    $("#emptyAddBtn").on("click", function(){
+        $("#memoForm")[0].reset();
+        $("#memoModal").modal('show');
+    });
+    $(document).ready(function() {
+        $("#searchInput").on("input",function(){
+            loadMemos();
+        });
+        $("#priorityFilter").change(function(){
+            loadMemos();
+        });
+        $("#categoryFilter").change(function(){
+            loadMemos();
+        });
+        window.page = new Pagination({
+            url:"/memos/list",
+            params:{
+                key: $("#searchInput").val(),
+                priority: $("#priorityFilter").val(),
+                category: $("#categoryFilter").val(),
+                page:1,
+                per_page:10
+            },
+            container:"#foot-paginate",
+            callback:function(res){
+                renderMemos(res);
+            }
+        });
+
+        function loadMemos(){
+            window.page.options.params.key = $("#searchInput").val();
+            window.page.options.params.priority = $("#priorityFilter").val();
+            window.page.options.params.category = $("#categoryFilter").val();
+            window.page.options.params.page = 1;
+            window.page.options.params.per_page = 10;
+            window.page.loadData();
+        }
+
+        function renderMemos(data){
+            $("#memoList").empty();
+            data.forEach(memo => {
+                memo.create_time = $.DateUtil.format(new Date(memo.create_time),"yyyy-MM-dd HH:mm:ss");
+                 const memoHtml = `
+                    <div class="col-md-6 mb-4 memo-column"">
+                        <div class="card memo-card h-100">
+                            <div class="card-body">
+                                <button class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 delete-btn delete-memo"
+                                        data-id="${memo.id}"
+                                        title="删除">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <h5 class="card-title">${memo.title}</h5>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <small>${memo.content}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <small class="text-muted">${memo.create_time} </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                $("#memoList").append(memoHtml);
+            });
+
+            $(".memo-column").click(function(){
+                $("#memoModal").modal("show");
+            });
+
+            $(".delete-memo").click(function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                const _id = $(this).data("id");
+                window.CustomDialog.confirm(
+                    '确定要删除备忘录吗？',
+                    () => {
+                        $.ajax({
+                            url:"/move_to_trash/memos/" + _id,
+                            type:"POST",
+                            success:function(res){
+                                if(res.success){
+                                    loadMemos();
+                                }
+                            }
+                        })
+                    },
+                    () => { /* 取消操作 */ }
+                );
+            });
+        }
+
+        $("#saveMemoBtn").on("click", function(){
+            if($("#memo-title").val() == ""){
+                $.glassToast({message:"请输入标题！",type:"error", duration:1800, position:"top-center"});
+                return;
+            }
+            if($("#memo-content").val() == ""){
+                $.glassToast({message:"请输入内容！",type:"error", duration:1800, position:"top-center"});
+                return;
+            }
+
+            $.post("/memos/add",{
+                id:$("#memoId").val(),
+                title:$("#memo-title").val(),
+                content:$("#memo-content").val(),
+                priority:$("#priority").val(),
+                category:$("#category").val()
+            },function(res){
+                alert(res);
+                $("#memoModal").modal('hide');
+                loadMemos();
+            });
+        });
+    });
+</script>

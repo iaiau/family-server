@@ -134,20 +134,20 @@
         $('#userTableBody').on('click', '.delete-btn', function() {
             const row = $(this).closest('tr');
             window.CustomDialog.confirm(
-            '确定要删除该用户吗？',
-            () => {
-                $.ajax({
-                    url:"/move_to_trash/users/" + row.find('td:eq(0)').text(),
-                    type:"POST",
-                    success:function(res){
-                        if(res.success){
-                            loadUsers();
+                '确定要删除该用户吗？',
+                () => {
+                    $.ajax({
+                        url:"/move_to_trash/users/" + row.find('td:eq(0)').text(),
+                        type:"POST",
+                        success:function(res){
+                            if(res.success){
+                                loadUsers();
+                            }
                         }
-                    }
-                })
-            },
-            () => { /* 取消操作 */ }
-        );
+                    })
+                },
+                () => { /* 取消操作 */ }
+            );
 
         });
 
