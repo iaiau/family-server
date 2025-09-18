@@ -1,4 +1,5 @@
 #-*-coding:utf-8-*-
+from datetime import timedelta
 
 # 定时任务配置
 SCHEDULER_API_ENABLED = True
@@ -8,6 +9,7 @@ JOBS = []
 DEBUG=True
 USE_DEBUGGER=True
 SECRET_KEY='a3f7e29b4c8d1065'
+PERMANENT_SESSION_LIFETIME=timedelta(minutes=30)
 
 # database settin
 SQLALCHEMY_DATABASE_URI='sqlite:///app.db'

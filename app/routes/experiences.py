@@ -13,6 +13,7 @@ experience_bp = Blueprint('experiences', __name__, url_prefix='/experiences')
 
 
 @experience_bp.route('/')
+@login_required
 def index():
     return render_template('index.html', expModal=True, content_frame="frames/experience_frame.html")
 

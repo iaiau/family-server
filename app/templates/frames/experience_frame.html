@@ -81,8 +81,7 @@
         if(filteredexps.length === 0) {
             $('#expContainer').html(`
                 <div class="col-12 text-center py-5">
-                    <h4 class="text-muted">${keyword ? '没有找到相关文章' : '暂无经验分享'}</h4>
-                    ${!keyword ? '<button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newexpModal">新建第一篇</button>' : ''}
+                    <h4 class="text-muted">${'没有找到相关文章'}</h4>
                 </div>
             `);
             return;

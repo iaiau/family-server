@@ -34,19 +34,20 @@
     <div class="profile-header p-4 mb-4">
         <div class="row align-items-center">
             <div class="col-md-2 text-center">
-                <img src="https://picsum.photos/200/200?person" alt="用户头像" class="profile-img rounded-circle mb-3">
+                <img src="{{user.portrait}}" alt="用户头像" class="profile-img rounded-circle mb-3">
+                <a href="">默认</a>
             </div>
             <div class="col-md-10">
                 <h2>{{ session.user.username }}</h2>
                 <div class="row mt-3">
                     <div class="col-md-4">
-                        <p><i class="fas fa-envelope me-2"></i> {{ user.email or "--" }}</p>
+                        <p><i class="fas bi-envelope me-2"></i>{{ user.email or "--" }}</p>
                     </div>
                     <div class="col-md-4">
-                        <p><i class="fas fa-phone me-2"></i> {{ user.phone_no or '--' }}</p>
+                        <p><i class="fas bi-phone me-2"></i>{{ user.phone_no or '--' }}</p>
                     </div>
                     <div class="col-md-4">
-                        <p><i class="fas fa-calendar-alt me-2"></i> 注册于 {{ user.create_time or '--' }}</p>
+                        <p><i class="fas bi-clock me-2"></i>注册于:{{ user.create_time or '--' }}</p>
                     </div>
                 </div>
             </div>
@@ -68,7 +69,7 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="portrait-tab" data-bs-toggle="pill" data-bs-target="#portrait" type="button">
-                <i class="fas fa-chart-pie me-2"></i>用户画像
+                <i class="fas bi-chart-pie me-2"></i>用户画像
             </button>
         </li>
     </ul>
@@ -77,7 +78,7 @@
     <div class="tab-content" id="profileTabsContent">
         <!-- 个人资料 -->
         <div class="tab-pane fade show active" id="profile" role="tabpanel">
-            <h4 class="mb-4"><i class="fas fa-user me-2"></i>个人资料</h4>
+            <h4 class="mb-4"><i class="fas bi-user me-2"></i>个人资料</h4>
             <form>
                 <div class="row mb-3">
                     <input type="hidden" id="user-id-input" value="{{ user.id }}">
@@ -259,9 +260,34 @@
             }
         });
 
+        async  function uploadToServer(file) {
+          return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('files[]', file);
+            $.ajax({
+               url: '/author/upload/portrait/' + {{user.id}},
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+              success: resolve,
+              error: reject
+            });
+          });
+        }
+
         // 头像点击事件
         $('.profile-img').on('click', function() {
-            alert('打开文件选择器上传新头像');
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = () => {
+                const file = input.files[0];
+                uploadToServer(file).then(res => {
+                  $('.profile-img').attr('src',res.path);
+                });
+            }
+            input.click();
         });
     });
 </script>

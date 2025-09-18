@@ -138,7 +138,7 @@
 
     <div id="foot-paginate"></div>
 
-    <a href="javascript:$('#memoModal').modal('show');" class="floating-btn btn btn-primary">
+    <a href="javascript:showMemoModal();" class="floating-btn btn btn-primary">
         <i class="fas fa-plus"></i>
     </a>
 </div>
@@ -147,10 +147,11 @@
 <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dateutil.js') }}"></script>
 <script>
-    $("#emptyAddBtn").on("click", function(){
+    function showMemoModal(){
+        $(".modal-title").html("新增");
         $("#memoForm")[0].reset();
         $("#memoModal").modal('show');
-    });
+    }
     $(document).ready(function() {
         $("#searchInput").on("input",function(){
             loadMemos();
@@ -190,8 +191,8 @@
             data.forEach(memo => {
                 memo.create_time = $.DateUtil.format(new Date(memo.create_time),"yyyy-MM-dd HH:mm:ss");
                  const memoHtml = `
-                    <div class="col-md-6 mb-4 memo-column"">
-                        <div class="card memo-card h-100">
+                    <div class="col-md-6 mb-4 memo-column" data-id="${memo.id}">
+                        <div class="card memo-card h-100" >
                             <div class="card-body">
                                 <button class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 delete-btn delete-memo"
                                         data-id="${memo.id}"
@@ -214,7 +215,15 @@
             });
 
             $(".memo-column").click(function(){
-                $("#memoModal").modal("show");
+                $(".modal-title").html("修改");
+                $.post("/get_by_id/memos/" + $(this).data("id"),function(res){
+                    $("#memoModal").modal("show");
+                    $("#memoId").val(res.id);
+                    $("#memo-title").val(res.title);
+                    $("#memo-content").val(res.content);
+                    $("#priority").val(res.priority);
+                    $("#category").val(res.category);
+                });
             });
 
             $(".delete-memo").click(function(e){
@@ -256,7 +265,6 @@
                 priority:$("#priority").val(),
                 category:$("#category").val()
             },function(res){
-                alert(res);
                 $("#memoModal").modal('hide');
                 loadMemos();
             });

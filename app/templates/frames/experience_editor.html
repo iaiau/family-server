@@ -141,9 +141,9 @@
             $.glassToast({message:"请输入你要分享的经验内容！",type:"error", duration:1800, position:"top-center"});
             return;
         }
-        console.log(quill.getContents());
-        console.log("text:" + quill.getText() + ":end");
-        return;
+        //console.log(quill.getContents());
+        //console.log("text:" + quill.getText() + ":end");
+        //return;
         $.ajax({
             url:"/experiences/save",
             type:"POST",

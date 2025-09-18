@@ -27,6 +27,7 @@ class User(UserMixin, Base):
     __tablename__ = 'users'
     username = db.Column(db.String(50), unique=True)  # 用户名
     name = db.Column(db.String(30))  # 名字
+    portrait = db.Column(db.String(100))
     password = db.Column(db.String(64))  # 密码
     salt = db.Column(db.String(20))
     phone_no = db.Column(db.String(20))  # 电话

@@ -294,12 +294,12 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <p class="text-secondary mb-1">CPU 使用率</p>
-                                    <h5 class="mb-0">28%</h5>
+                                    <h5 class="mb-0">{{cpuUsage.total_usage}}</h5>
                                 </div>
                                 <i class="fas fa-microchip fa-2x text-primary"></i>
                             </div>
                             <div class="storage-bar mt-2">
-                                <div class="storage-progress success" style="width: 28%"></div>
+                                <div class="storage-progress success" style="width: {{cpuUsage.total_usage}}"></div>
                             </div>
                         </div>
                     </div>
@@ -310,12 +310,12 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <p class="text-secondary mb-1">内存使用</p>
-                                    <h5 class="mb-0">64%</h5>
+                                    <h5 class="mb-0">{{memUsage.usage}}</h5>
                                 </div>
                                 <i class="fas fa-memory fa-2x text-primary"></i>
                             </div>
                             <div class="storage-bar mt-2">
-                                <div class="storage-progress warning" style="width: 64%"></div>
+                                <div class="storage-progress warning" style="width: {{memUsage.usage}}"></div>
                             </div>
                         </div>
                     </div>
@@ -326,71 +326,13 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <p class="text-secondary mb-1">存储使用</p>
-                                    <h5 class="mb-0">78%</h5>
+                                    <h5 class="mb-0">{{diskUsage[0].usage}}</h5>
                                 </div>
                                 <i class="fas fa-hdd fa-2x text-primary"></i>
                             </div>
                             <div class="storage-bar mt-2">
-                                <div class="storage-progress danger" style="width: 78%"></div>
+                                <div class="storage-progress danger" style="width: {{diskUsage[0].usage}}"></div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 个人资料设置 -->
-            <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-user me-2"></i>个人资料</span>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-4">
-                            <div class="avatar-upload">
-                                <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="avatar-img">
-                                <div class="avatar-overlay">
-                                    <i class="fas fa-camera text-white"></i>
-                                </div>
-                                <input type="file" id="avatarInput" class="d-none">
-                            </div>
-                            <button class="btn btn-outline-primary btn-sm"
-                                    onclick="document.getElementById('avatarInput').click()">
-                                <i class="fas fa-upload me-1"></i>更换头像
-                            </button>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="username" class="form-label">用户名</label>
-                                    <input type="text" class="form-control" id="username" value="admin">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="displayName" class="form-label">显示名称</label>
-                                    <input type="text" class="form-control" id="displayName" value="家庭管理员">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">电子邮件</label>
-                                <input type="email" class="form-control" id="email" value="admin@homelab.local">
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="currentPassword" class="form-label">当前密码</label>
-                                    <input type="password" class="form-control" id="currentPassword">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="newPassword" class="form-label">新密码</label>
-                                    <input type="password" class="form-control" id="newPassword">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="bio" class="form-label">个人简介</label>
-                                <textarea class="form-control" id="bio"
-                                          rows="3">家庭服务器管理员，负责维护和管理家庭网络与存储系统。</textarea>
-                            </div>
-                            <button class="btn btn-primary" id="saveProfileBtn">
-                                <i class="fas fa-save me-1"></i>保存个人资料
-                            </button>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,8 @@
+import datetime
 import os
+from datetime import timedelta
 
-from flask import Flask, render_template, abort, Blueprint, jsonify
+from flask import Flask, render_template, abort, Blueprint, session, current_app
 from flask_login import LoginManager,login_required
 import click
 import sys
@@ -18,6 +20,7 @@ from app.routes.tools import tools_bp
 
 import logging
 
+from app.services import model_to_dict
 from app.services.users_service import getUserByName
 
 logger = logging.getLogger(__name__)
@@ -62,6 +65,18 @@ def move_to_trash(table,_id):
 	})
 	return {"success":True}
 
+@family_app.route("/get_by_id/<string:table>/<int:_id>", methods = ['POST'])
+@login_required
+def get_by_id(table,_id):
+    select_sql = text(f"""
+        select * from {literal_column(table)} where id=:id
+        """)
+    model = db.session.execute(select_sql, {"id":_id}).mappings().first()
+    res = {}
+    for key in model:
+        res[key] = model[key]
+    return res
+
 def callBack(var):
 	return User()
 
@@ -69,32 +84,36 @@ def callBack(var):
 def load_user(username):
     return getUserByName(username)
 
-
-
 def config_app(app, config):
-	"""
-	应用程序配置
-	"""
-	logger.info('应用程序配置')
-	app.config.from_pyfile(config)
-	db.init_app(app)
-	db.app = app
+    """
+    应用程序配置
+    """
+    logger.info('应用程序配置')
+    app.config.from_pyfile(config)
+    db.init_app(app)
+    db.app = app
 
-	@app.after_request
-	def after_request(response):
-		try:
-			response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-			response.headers["Pragma"] = "no-cache"
-			response.headers["Expires"] = "0"
-			response.headers['Access-Control-Allow-Origin'] = 'http://192.168.1.12:5000'
-			response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-			response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-			db.session.commit()
-		except Exception as e:
-			print(e)
-			db.session.rollback()
-			abort(500)
-		return response
+    @app.before_request
+    def set_session_timeout():
+        session.permanent = True
+        app.permanent_session_lifetime = timedelta(minutes=15)
+
+
+    @app.after_request
+    def after_request(response):
+        try:
+            # response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            # response.headers["Pragma"] = "no-cache"
+            # response.headers["Expires"] = "0"
+            # response.headers['Access-Control-Allow-Origin'] = 'http://192.168.1.12:5000'
+            # response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+            # response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            db.session.commit()
+        except Exception as e:
+            print(e)
+            db.session.rollback()
+            abort(500)
+        return response
 
 def dispatch_handlers(app):
 	"""
@@ -132,16 +151,31 @@ def safe_html(content):
               type=click.Path(exists=True, dir_okay=False),
               help='Configuration file name (default: config.py)')
 def initdb(config='config.py'):
-	config_app(family_app, config)
+    config_app(family_app, config)
 
-	logger.info("初始化数据库")
-	try:
-		db.drop_all()
-		db.create_all()
-		print('Create tables success')
-	except Exception as e:
-		print('Create tables failed:'), e
-		sys.exit(0)
+    logger.info("初始化数据库")
+    try:
+        UPLOAD_FOLDERS = ['/app/static/uploads/','/app/static/uploads/exp/article/','/app/static/uploads/portraits/']
+        for folder in UPLOAD_FOLDERS:
+            for name in os.listdir(current_app.root_path + folder):
+                if name.startswith("default"):
+                    continue
+                if os.path.isdir(os.path.join(current_app.root_path + folder, name)):
+                    continue
+                os.remove(current_app.root_path + folder + name)
+        print('文件删除成功！')
+        db.drop_all()
+        db.create_all()
+        db.session.add(User(username='admin', name='admin', password='21232f297a57a5a743894a0e4a801fc3',
+                            portrait='../../static/uploads/portraits/default.png',
+                            role='admin', created_by=1, modified_by=1, create_time=datetime.datetime.utcnow(),
+                            update_time=datetime.datetime.utcnow(), phone_no='12345678901', email='admin@exaple.com',
+                            age=100, gender=1, desc='家庭服务器管理员', birthday=datetime.date.today()))
+        db.session.commit()
+        print('Create tables success')
+    except Exception as e:
+        print('Create tables failed:' + str(e))
+        sys.exit(0)
 
 family_app.cli.add_command(initdb)
 
