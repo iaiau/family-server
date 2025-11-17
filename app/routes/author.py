@@ -106,3 +106,8 @@ def upload_portrait(_id):
             file.save(os.path.join(UPLOAD_FOLDER, filename))
             db.session.query(User).filter_by(id=_id).update({'portrait': '../../static/uploads/portraits/' + filename})
     return {'status': 'success', 'path': '../../static/uploads/portraits/' + filename}
+
+@author_bp.route("/default/portrait/<int:_id>", methods=["POST"])
+def default_portrait(_id):
+    db.session.query(User).filter_by(id=_id).update({'portrait':'../../static/uploads/portraits/default.png'})
+    return {'status': 'success', 'path': '../../static/uploads/portraits/default.png'}

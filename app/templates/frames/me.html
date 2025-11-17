@@ -35,7 +35,7 @@
         <div class="row align-items-center">
             <div class="col-md-2 text-center">
                 <img src="{{user.portrait}}" alt="用户头像" class="profile-img rounded-circle mb-3">
-                <a href="">默认</a>
+                <a style="color:#551A8B;" href="javascript:changeToDefaultPortrait();">默认</a>
             </div>
             <div class="col-md-10">
                 <h2>{{ session.user.username }}</h2>
@@ -289,5 +289,14 @@
             }
             input.click();
         });
+
+
     });
+     function changeToDefaultPortrait(){
+        $.post("/author/default/portrait/" + {{user.id}},function(res){
+            if(res.status == "success"){
+                $('.profile-img').attr('src',res.path);
+            }
+        });
+    }
 </script>
